@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(dir:*)",
+      "Bash(firebase:*)",
+      "Bash(npm run build:*)",
+      "Bash(tree:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(ls -la \"c:\\\\Users\\\\emili\\\\OneDrive\\\\Documents\\\\M1001\\\\Code\\\\Clone Cometly\\\\src\\\\app\"\" | grep -E \"css)",
+      "Bash(style \")",
+      "Bash(npx next build:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
