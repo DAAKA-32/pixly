@@ -50,3 +50,5 @@ firebase-service-account.json
 .vscode/
 *.swp
 *.swo
+
+.vercel

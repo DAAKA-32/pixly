@@ -5,11 +5,6 @@ import { motion } from 'framer-motion';
 import { Search, ArrowUpDown, TrendingUp, TrendingDown } from 'lucide-react';
 import type { CampaignMetrics, Channel } from '@/types';
 
-// ===========================================
-// PIXLY - Campaign Performance Table
-// Sortable, searchable campaign overview
-// ===========================================
-
 const channelLabels: Record<Channel, string> = {
   meta: 'Meta Ads',
   google: 'Google Ads',
@@ -61,7 +56,6 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
   const filtered = useMemo(() => {
     let result = [...campaigns];
 
-    // Search filter
     if (search) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -71,7 +65,6 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
       );
     }
 
-    // Sort
     result.sort((a, b) => {
       const aVal = a[sortKey];
       const bVal = b[sortKey];
@@ -90,11 +83,13 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-        <div className="h-6 w-48 animate-pulse rounded-lg bg-neutral-200 mb-4" />
-        <div className="space-y-3">
+      <div className="rounded-2xl border border-neutral-200/80 bg-white">
+        <div className="p-5">
+          <div className="h-5 w-32 animate-pulse rounded-md bg-neutral-100" />
+        </div>
+        <div className="px-5 pb-5 space-y-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-12 animate-pulse rounded-lg bg-neutral-100" />
+            <div key={i} className="h-11 animate-pulse rounded-lg bg-neutral-50" />
           ))}
         </div>
       </div>
@@ -102,29 +97,32 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-neutral-200 bg-white">
+    <div className="rounded-2xl border border-neutral-200/80 bg-white">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-neutral-100 p-5">
-        <h3 className="text-lg font-semibold text-neutral-900">
-          Campagnes
-        </h3>
+      <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4">
+        <div className="flex items-baseline gap-2.5">
+          <h3 className="text-[15px] font-semibold text-neutral-900">Campagnes</h3>
+          <span className="text-[12px] tabular-nums text-neutral-400">
+            {filtered.length}
+          </span>
+        </div>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-neutral-400" />
           <input
             type="text"
             placeholder="Rechercher..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="h-9 rounded-lg border border-neutral-200 bg-neutral-50 pl-9 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all"
+            className="h-8 rounded-lg border border-neutral-200/80 bg-neutral-50 pl-8 pr-3 text-[13px] text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-300 focus:bg-white focus:outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full text-[13px]">
           <thead>
-            <tr className="text-left">
+            <tr className="border-b border-neutral-100 text-left">
               <SortHeader
                 label="Campagne"
                 sortKey="campaignName"
@@ -132,7 +130,7 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
                 direction={sortDir}
                 onSort={toggleSort}
               />
-              <th className="px-4 py-3 font-medium text-neutral-500">Canal</th>
+              <th className="px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider text-neutral-400">Canal</th>
               <SortHeader
                 label="Dépense"
                 sortKey="spend"
@@ -178,7 +176,7 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
           <tbody className="divide-y divide-neutral-50">
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-neutral-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-[13px] text-neutral-400">
                   Aucune campagne trouvée
                 </td>
               </tr>
@@ -189,44 +187,44 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: idx * 0.02 }}
-                  className="hover:bg-neutral-50/80 transition-colors"
+                  className="transition-colors hover:bg-neutral-50/60"
                 >
-                  <td className="px-4 py-3.5 font-medium text-neutral-900">
+                  <td className="max-w-[220px] truncate px-4 py-3 font-medium text-neutral-900">
                     {camp.campaignName}
                   </td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2 w-2 rounded-full ${channelDots[camp.channel]}`} />
-                      <span className="text-neutral-600">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className={`h-1.5 w-1.5 rounded-full ${channelDots[camp.channel]}`} />
+                      <span className="text-neutral-500">
                         {channelLabels[camp.channel]}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-right text-neutral-600">
-                    {camp.spend.toLocaleString('fr-FR')} €
+                  <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
+                    {camp.spend.toLocaleString('fr-FR')} &euro;
                   </td>
-                  <td className="px-4 py-3.5 text-right font-medium text-neutral-900">
-                    {camp.revenue.toLocaleString('fr-FR')} €
+                  <td className="px-4 py-3 text-right tabular-nums font-medium text-neutral-900">
+                    {camp.revenue.toLocaleString('fr-FR')} &euro;
                   </td>
-                  <td className="px-4 py-3.5 text-right text-neutral-600">
+                  <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
                     {camp.conversions}
                   </td>
-                  <td className="px-4 py-3.5 text-right">
-                    <span className={`inline-flex items-center gap-1 font-semibold ${
-                      camp.roas >= 4 ? 'text-green-600' :
-                      camp.roas >= 2 ? 'text-primary-600' :
-                      'text-red-600'
+                  <td className="px-4 py-3 text-right">
+                    <span className={`inline-flex items-center gap-0.5 tabular-nums font-semibold ${
+                      camp.roas >= 4 ? 'text-emerald-600' :
+                      camp.roas >= 2 ? 'text-neutral-900' :
+                      'text-red-500'
                     }`}>
                       {camp.roas >= 4 ? (
-                        <TrendingUp className="h-3.5 w-3.5" />
-                      ) : camp.roas < 2 ? (
-                        <TrendingDown className="h-3.5 w-3.5" />
+                        <TrendingUp className="h-3 w-3" />
+                      ) : camp.roas < 2 && camp.spend > 0 ? (
+                        <TrendingDown className="h-3 w-3" />
                       ) : null}
                       {camp.roas.toFixed(2)}x
                     </span>
                   </td>
-                  <td className="px-4 py-3.5 text-right text-neutral-600">
-                    {camp.cpa.toFixed(2)} €
+                  <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
+                    {camp.cpa.toFixed(2)} &euro;
                   </td>
                 </motion.tr>
               ))
@@ -238,7 +236,6 @@ export function CampaignTable({ campaigns, isLoading }: CampaignTableProps) {
   );
 }
 
-// Sortable column header
 function SortHeader({
   label,
   sortKey,
@@ -257,14 +254,14 @@ function SortHeader({
   const isActive = currentKey === sortKey;
   return (
     <th
-      className={`px-4 py-3 font-medium text-neutral-500 cursor-pointer select-none hover:text-neutral-700 transition-colors ${
-        align === 'right' ? 'text-right' : ''
-      }`}
+      className={`cursor-pointer select-none px-4 py-2.5 text-[11px] font-medium uppercase tracking-wider transition-colors hover:text-neutral-600 ${
+        isActive ? 'text-neutral-600' : 'text-neutral-400'
+      } ${align === 'right' ? 'text-right' : ''}`}
       onClick={() => onSort(sortKey)}
     >
       <span className="inline-flex items-center gap-1">
         {label}
-        <ArrowUpDown className={`h-3.5 w-3.5 ${isActive ? 'text-primary-500' : 'text-neutral-300'}`} />
+        <ArrowUpDown className={`h-3 w-3 ${isActive ? 'text-emerald-500' : 'text-neutral-300'}`} />
       </span>
     </th>
   );

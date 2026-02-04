@@ -3,38 +3,44 @@
 @tailwind utilities;
 
 /* ===========================================
-   PIXLY - Global Styles
+   PIXLY - Clean Premium Design System
+   Typography: DM Serif Display (headings) + Inter (body/UI)
+   Colors: Neutral grays + Primary green (#10b981)
    =========================================== */
 
 @layer base {
-  :root {
-    --font-sans: 'Inter', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
-
   html {
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    overscroll-behavior: none;
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 font-sans;
+    @apply bg-white text-neutral-900 font-sans;
+    overflow-x: hidden;
+    overscroll-behavior: none;
   }
 
-  /* Selection */
+  /* Prevent touch zoom on mobile — allow scroll + tap */
+  *, *::before, *::after {
+    touch-action: manipulation;
+  }
+
+  /* Dashboard layout — sidebar offset removed on mobile */
+  @media (max-width: 1023px) {
+    .dashboard-content {
+      margin-left: 0 !important;
+    }
+  }
+
   ::selection {
-    @apply bg-primary-200 text-primary-900;
+    @apply bg-primary-100 text-primary-900;
   }
 
-  /* Focus ring */
-  *:focus-visible {
-    @apply outline-none ring-2 ring-primary-500 ring-offset-2;
-  }
-
-  /* Scrollbar */
   ::-webkit-scrollbar {
-    @apply w-2 h-2;
+    @apply w-1.5;
   }
 
   ::-webkit-scrollbar-track {
@@ -51,251 +57,227 @@
 }
 
 @layer components {
-  /* Glass effect */
-  .glass {
-    @apply bg-white/80 backdrop-blur-xl border border-white/20;
+  /* ===========================================
+     Typography
+     DM Serif Display for headings (H1, H2, H3)
+     Inter for body text, UI, navigation
+     =========================================== */
+
+  .heading-xl {
+    @apply text-4xl sm:text-5xl lg:text-6xl font-serif text-neutral-900;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
   }
 
-  .glass-dark {
-    @apply bg-neutral-900/80 backdrop-blur-xl border border-white/10;
+  .heading-lg {
+    @apply text-3xl sm:text-4xl lg:text-5xl font-serif text-neutral-900;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
   }
 
-  /* Gradient backgrounds */
-  .gradient-primary {
-    @apply bg-gradient-to-br from-primary-400 via-primary-500 to-primary-600;
+  .heading-md {
+    @apply text-xl sm:text-2xl font-serif text-neutral-900;
+    line-height: 1.2;
   }
 
-  .gradient-dark {
-    @apply bg-gradient-to-br from-neutral-800 via-neutral-900 to-neutral-950;
+  .text-body {
+    @apply text-base sm:text-lg text-neutral-600 leading-relaxed font-sans;
   }
 
-  .gradient-hero {
-    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent),
-                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(16, 185, 129, 0.08), transparent);
+  .text-small {
+    @apply text-sm text-neutral-500 font-sans;
   }
 
-  .gradient-mesh {
-    background-image:
-      radial-gradient(at 40% 20%, rgba(16, 185, 129, 0.1) 0px, transparent 50%),
-      radial-gradient(at 80% 0%, rgba(5, 150, 105, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 50%, rgba(110, 231, 183, 0.08) 0px, transparent 50%),
-      radial-gradient(at 80% 50%, rgba(52, 211, 153, 0.08) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(16, 185, 129, 0.08) 0px, transparent 50%);
+  .label {
+    @apply text-xs font-semibold uppercase tracking-wider text-primary-600 font-sans;
   }
 
-  .gradient-glow {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, transparent 50%);
+  /* ===========================================
+     Layout
+     =========================================== */
+
+  .section {
+    @apply py-16 sm:py-24 lg:py-32;
   }
 
-  /* Text gradient */
-  .text-gradient {
-    @apply bg-gradient-to-r from-primary-500 via-primary-400 to-primary-600 bg-clip-text text-transparent;
-    background-size: 200% auto;
+  .container-main {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
 
-  .text-gradient-animated {
-    @apply bg-gradient-to-r from-primary-500 via-primary-400 to-primary-600 bg-clip-text text-transparent;
-    background-size: 200% auto;
-    animation: gradientShift 4s ease infinite;
+  /* ===========================================
+     Cards
+     =========================================== */
+
+  .card {
+    @apply bg-white rounded-2xl border border-neutral-200 p-6 sm:p-8;
+    @apply transition-all duration-300;
   }
 
-  /* Premium card styles */
-  .card-premium {
-    @apply relative rounded-2xl border border-neutral-200/50 bg-white p-8 transition-all duration-500;
-    box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.05);
+  .card-hover:hover {
+    @apply border-neutral-300 shadow-lg -translate-y-1;
   }
 
-  .card-premium::before {
-    content: '';
-    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  .card-feature {
+    @apply card card-hover;
   }
 
-  .card-premium:hover {
-    @apply border-primary-200/50 -translate-y-1;
-    box-shadow: 0 20px 40px -12px rgba(16, 185, 129, 0.15);
+  .card-testimonial {
+    @apply card bg-neutral-50 border-transparent;
   }
 
-  .card-premium:hover::before {
-    @apply opacity-100;
+  .card-pricing {
+    @apply card relative;
   }
 
-  /* Glow effects */
-  .glow-primary {
-    box-shadow: 0 0 40px -8px rgba(16, 185, 129, 0.4);
+  .card-pricing.featured {
+    @apply border-primary-500 shadow-xl shadow-primary-500/10;
   }
 
-  .glow-primary-strong {
-    box-shadow: 0 0 60px -8px rgba(16, 185, 129, 0.5),
-                0 0 100px -16px rgba(16, 185, 129, 0.3);
-  }
-
-  /* Button premium styles */
-  .btn-premium {
-    @apply relative overflow-hidden transition-all duration-300;
-  }
-
-  .btn-premium::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
-  }
-
-  .btn-premium:hover::before {
-    @apply opacity-100;
-  }
-
-  /* Shimmer effect */
-  .shimmer {
-    @apply relative overflow-hidden;
-  }
-
-  .shimmer::after {
-    content: '';
-    @apply absolute inset-0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.4) 50%, transparent 100%);
-    background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
-  }
-
-  /* Floating orbs decoration */
-  .orb {
-    @apply absolute rounded-full blur-3xl;
-  }
-
-  .orb-primary {
-    @apply bg-primary-400/20;
-  }
-
-  .orb-secondary {
-    @apply bg-primary-300/15;
-  }
-
-  /* Grid pattern */
-  .grid-pattern {
-    background-image: linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
-    background-size: 60px 60px;
-  }
-
-  /* Dot pattern */
-  .dot-pattern {
-    background-image: radial-gradient(rgba(16, 185, 129, 0.15) 1px, transparent 1px);
-    background-size: 24px 24px;
-  }
-
-  /* Card hover effect */
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-medium hover:-translate-y-0.5;
-  }
-
-  /* Metric card */
   .metric-card {
-    @apply rounded-2xl border border-neutral-200 bg-white p-6 shadow-soft transition-all duration-200;
+    @apply bg-white rounded-2xl border border-neutral-200 p-5;
+    @apply transition-all duration-300;
   }
 
   .metric-card:hover {
-    @apply shadow-medium border-neutral-300;
+    @apply border-neutral-300 shadow-soft;
   }
 
-  /* Status indicator */
-  .status-dot {
-    @apply h-2 w-2 rounded-full;
+  /* ===========================================
+     Buttons
+     =========================================== */
+
+  .btn {
+    @apply inline-flex items-center justify-center font-medium rounded-xl;
+    @apply transition-all duration-200;
   }
 
-  .status-dot.active {
-    @apply bg-success animate-pulse-soft;
+  .btn-lg {
+    @apply px-6 py-3 text-base;
   }
 
-  .status-dot.inactive {
-    @apply bg-neutral-300;
+  .btn-xl {
+    @apply px-8 py-4 text-base;
   }
 
-  .status-dot.warning {
-    @apply bg-warning;
+  .btn-primary {
+    @apply bg-primary-600 text-white;
+    @apply hover:bg-primary-700;
+    @apply shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/30;
   }
 
-  .status-dot.error {
-    @apply bg-error;
+  .btn-secondary {
+    @apply bg-neutral-900 text-white;
+    @apply hover:bg-neutral-800;
   }
 
-  /* Sidebar */
-  .sidebar-link {
-    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-neutral-600 transition-all duration-200;
+  .btn-outline {
+    @apply bg-transparent text-neutral-700 border-2 border-neutral-200;
+    @apply hover:border-neutral-300 hover:bg-neutral-50;
   }
 
-  .sidebar-link:hover {
-    @apply bg-neutral-100 text-neutral-900;
+  .btn-ghost {
+    @apply bg-transparent text-neutral-600;
+    @apply hover:text-neutral-900 hover:bg-neutral-100;
   }
 
-  .sidebar-link.active {
-    @apply bg-primary-50 text-primary-700;
+  /* ===========================================
+     Navigation
+     =========================================== */
+
+  .nav-link {
+    @apply text-sm font-medium text-neutral-600;
+    @apply hover:text-neutral-900;
+    @apply transition-colors duration-200;
   }
 
-  /* Data table */
-  .data-table {
-    @apply w-full text-sm;
+  /* ===========================================
+     Badges
+     =========================================== */
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium;
   }
 
-  .data-table th {
-    @apply border-b border-neutral-200 px-4 py-3 text-left font-medium text-neutral-500;
+  .badge-primary {
+    @apply bg-primary-50 text-primary-700 border border-primary-200;
   }
 
-  .data-table td {
-    @apply border-b border-neutral-100 px-4 py-4 text-neutral-700;
+  .badge-neutral {
+    @apply bg-neutral-100 text-neutral-700;
   }
 
-  .data-table tbody tr {
-    @apply transition-colors duration-150;
+  /* ===========================================
+     Gradients
+     =========================================== */
+
+  .gradient-hero {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% -20%, rgba(16, 185, 129, 0.08), transparent),
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(16, 185, 129, 0.05), transparent);
   }
 
-  .data-table tbody tr:hover {
-    @apply bg-neutral-50;
+  .gradient-section {
+    @apply bg-gradient-to-b from-neutral-50 to-white;
   }
 
-  /* Empty state */
-  .empty-state {
-    @apply flex flex-col items-center justify-center py-16 text-center;
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-emerald-500 bg-clip-text text-transparent;
   }
 
-  .empty-state-icon {
-    @apply mb-4 h-16 w-16 text-neutral-300;
+  /* ===========================================
+     Utilities
+     =========================================== */
+
+  .icon-box {
+    @apply w-12 h-12 rounded-xl bg-primary-50 flex items-center justify-center;
+    @apply text-primary-600;
   }
 
-  .empty-state-title {
-    @apply text-lg font-semibold text-neutral-900;
+  .divider {
+    @apply h-px bg-neutral-200;
   }
 
-  .empty-state-description {
-    @apply mt-1 text-sm text-neutral-500;
+  .avatar {
+    @apply w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-600;
+    @apply flex items-center justify-center text-white text-sm font-semibold;
+  }
+
+  .stat-value {
+    @apply text-4xl sm:text-5xl font-serif text-neutral-900;
+  }
+
+  .stat-label {
+    @apply text-sm font-medium text-neutral-500 mt-1 font-sans;
   }
 }
 
 @layer utilities {
-  /* Animation delays */
-  .animation-delay-100 {
-    animation-delay: 100ms;
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
   }
 
-  .animation-delay-200 {
-    animation-delay: 200ms;
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
   }
 
-  .animation-delay-300 {
-    animation-delay: 300ms;
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
-  .animation-delay-400 {
-    animation-delay: 400ms;
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  /* Hide scrollbar */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .delay-100 { animation-delay: 100ms; }
+  .delay-200 { animation-delay: 200ms; }
+  .delay-300 { animation-delay: 300ms; }
+  .delay-400 { animation-delay: 400ms; }
 }

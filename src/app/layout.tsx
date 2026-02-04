@@ -1,10 +1,12 @@
-import type { Metadata } from 'next';
-import { Inter, JetBrains_Mono } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Inter, DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import { ZoomGuard } from '@/components/ui/zoom-guard';
 
 // ===========================================
 // PIXLY - Root Layout
+// Typography: Inter (UI/body) + DM Serif Display (headings)
 // ===========================================
 
 const inter = Inter({
@@ -13,17 +15,23 @@ const inter = Inter({
   display: 'swap',
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const dmSerif = DM_Serif_Display({
   subsets: ['latin'],
-  variable: '--font-mono',
+  variable: '--font-serif',
   display: 'swap',
+  weight: ['400'],
 });
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#ffffff',
+};
+
 export const metadata: Metadata = {
-  title: {
-    default: 'Pixly - Marketing Attribution Platform',
-    template: '%s | Pixly',
-  },
+  title: 'Pixly',
   description:
     'Track, attribute, and optimize your marketing spend with precision. Get accurate ROAS data across all your ad channels.',
   keywords: [
@@ -34,20 +42,39 @@ export const metadata: Metadata = {
     'marketing analytics',
   ],
   authors: [{ name: 'Pixly' }],
+  icons: {
+    icon: [{ url: '/logo.jpg', type: 'image/jpeg' }],
+    apple: [{ url: '/logo.jpg', type: 'image/jpeg' }],
+  },
+  manifest: '/manifest.json',
   openGraph: {
     type: 'website',
-    locale: 'en_US',
+    locale: 'fr_FR',
     url: 'https://pixly.app',
     siteName: 'Pixly',
-    title: 'Pixly - Marketing Attribution Platform',
+    title: 'Pixly',
     description:
       'Track, attribute, and optimize your marketing spend with precision.',
+    images: [
+      {
+        url: '/logo.jpg',
+        width: 1080,
+        height: 1080,
+        alt: 'Pixly',
+      },
+    ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'Pixly - Marketing Attribution Platform',
+    card: 'summary',
+    title: 'Pixly',
     description:
       'Track, attribute, and optimize your marketing spend with precision.',
+    images: ['/logo.jpg'],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Pixly',
   },
   robots: {
     index: true,
@@ -61,8 +88,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-neutral-50 antialiased">
+    <html lang="fr" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+      <body className="min-h-screen bg-neutral-50 antialiased" suppressHydrationWarning>
+        <ZoomGuard />
         <Providers>{children}</Providers>
       </body>
     </html>

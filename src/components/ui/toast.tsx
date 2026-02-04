@@ -78,10 +78,10 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      initial={{ opacity: 0, y: -12, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.15 } }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97, transition: { duration: 0.2, ease: 'easeOut' } }}
+      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
       className={cn(
         'pointer-events-auto w-full max-w-sm overflow-hidden rounded-xl border shadow-lg',
         config.bgClass,
@@ -91,8 +91,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       <div className="p-4">
         <div className="flex items-start gap-3">
           {/* Icon */}
-          <div className={cn('flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full', config.iconClass)}>
-            <Icon className="h-4 w-4" />
+          <div className={cn('flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full', config.iconClass)}>
+            <Icon className="h-3.5 w-3.5" />
           </div>
 
           {/* Content */}
@@ -123,11 +123,11 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         animate={{ scaleX: 0 }}
         transition={{ duration: (toast.duration || 4000) / 1000, ease: 'linear' }}
         className={cn(
-          'h-1 origin-left',
-          toast.type === 'success' && 'bg-green-500',
-          toast.type === 'error' && 'bg-red-500',
-          toast.type === 'warning' && 'bg-amber-500',
-          toast.type === 'info' && 'bg-blue-500'
+          'h-0.5 origin-left',
+          toast.type === 'success' && 'bg-green-400',
+          toast.type === 'error' && 'bg-red-400',
+          toast.type === 'warning' && 'bg-amber-400',
+          toast.type === 'info' && 'bg-blue-400'
         )}
       />
     </motion.div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import {
   AreaChart,
   Area,
@@ -15,13 +16,8 @@ import {
   Cell,
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { TrendingUp, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
+import { BarChart3 } from 'lucide-react';
 import { formatCurrency, formatNumber } from '@/lib/utils';
-
-// ===========================================
-// PIXLY - Chart Components
-// Premium data visualization
-// ===========================================
 
 const COLORS = {
   primary: '#10b981',
@@ -45,26 +41,50 @@ const CHANNEL_COLORS: Record<string, string> = {
   other: '#94a3b8',
 };
 
-// Skeleton loader for charts
 function ChartSkeleton() {
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-8 w-8 animate-pulse rounded-lg bg-neutral-200" />
-        <div className="h-3 w-24 animate-pulse rounded bg-neutral-200" />
+      <div className="flex flex-col items-center gap-2.5">
+        <div className="h-6 w-6 animate-pulse rounded-md bg-neutral-100" />
+        <div className="h-2.5 w-20 animate-pulse rounded bg-neutral-100" />
       </div>
     </div>
   );
 }
 
-// Empty state for charts
 function ChartEmpty({ message = 'Aucune donnée disponible' }: { message?: string }) {
   return (
     <div className="flex h-full items-center justify-center">
       <div className="text-center">
-        <BarChart3 className="mx-auto h-8 w-8 text-neutral-300" />
-        <p className="mt-2 text-sm text-neutral-400">{message}</p>
+        <BarChart3 className="mx-auto h-6 w-6 text-neutral-200" />
+        <p className="mt-2 text-[13px] text-neutral-400">{message}</p>
       </div>
+    </div>
+  );
+}
+
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="rounded-xl border border-neutral-100 bg-white px-4 py-3 shadow-medium">
+      <p className="mb-1.5 text-[11px] font-medium text-neutral-400">{label}</p>
+      {payload.map((entry: any, idx: number) => (
+        <div key={idx} className="flex items-center gap-2">
+          <div
+            className="h-1.5 w-1.5 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          />
+          <span className="text-[13px] font-semibold tabular-nums text-neutral-900">
+            {entry.name === 'revenue'
+              ? formatCurrency(entry.value)
+              : formatNumber(entry.value)}
+          </span>
+          <span className="text-[11px] text-neutral-400">
+            {entry.name === 'revenue' ? 'Revenus' : 'Conversions'}
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -77,100 +97,102 @@ interface RevenueChartProps {
 
 export function RevenueChart({
   data,
-  title = 'Revenus par jour',
+  title = 'Revenus',
   isLoading = false,
 }: RevenueChartProps) {
+  const [mounted, setMounted] = useState(false);
   const hasData = data.length > 0 && data.some(d => d.revenue > 0);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-neutral-200 bg-white p-6"
-    >
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50">
-            <TrendingUp className="h-5 w-5 text-primary-600" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-neutral-900">{title}</h3>
-            <p className="text-sm text-neutral-500">Évolution du chiffre d'affaires</p>
-          </div>
-        </div>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
+  const totalRevenue = data.reduce((sum, d) => sum + d.revenue, 0);
+
+  const Wrapper = mounted ? motion.div : 'div';
+  const wrapperProps = mounted ? {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] },
+  } : {};
+
+  return (
+    <Wrapper
+      {...wrapperProps}
+      className="rounded-2xl border border-neutral-200/80 bg-white p-4 sm:p-6"
+    >
+      <div className="mb-5 flex items-baseline justify-between">
+        <div>
+          <h3 className="text-[13px] font-medium text-neutral-500">{title}</h3>
+          {hasData && (
+            <p className="mt-1 text-2xl font-semibold tracking-tight text-neutral-900">
+              {formatCurrency(totalRevenue)}
+            </p>
+          )}
+        </div>
         {hasData && (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-primary-500" />
-              <span className="text-xs text-neutral-500">Revenus</span>
+            <div className="flex items-center gap-1.5">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              <span className="text-[11px] text-neutral-400">Revenus</span>
             </div>
-            {data[0]?.conversions !== undefined && (
-              <div className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-xs text-neutral-500">Conversions</span>
-              </div>
-            )}
           </div>
         )}
       </div>
 
-      <div className="h-72">
+      <div className="h-64">
         {isLoading ? (
           <ChartSkeleton />
         ) : !hasData ? (
           <ChartEmpty message="Aucun revenu sur cette période" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={COLORS.primary} stopOpacity={0.2} />
-                  <stop offset="95%" stopColor={COLORS.primary} stopOpacity={0} />
+                  <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.12} />
+                  <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+              <CartesianGrid
+                strokeDasharray="0"
+                stroke="#f5f5f5"
+                vertical={false}
+              />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                tick={{ fontSize: 11, fill: '#a3a3a3' }}
                 tickLine={false}
                 axisLine={false}
+                dy={8}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                tick={{ fontSize: 11, fill: '#a3a3a3' }}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => formatCurrency(value, 'EUR')}
-                width={80}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  padding: '12px 16px',
+                tickFormatter={(value) => {
+                  if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                  return `${value}`;
                 }}
-                formatter={(value: number, name: string) => [
-                  name === 'revenue' ? formatCurrency(value) : value,
-                  name === 'revenue' ? 'Revenus' : 'Conversions'
-                ]}
-                labelStyle={{ color: '#6b7280', marginBottom: '8px' }}
+                width={48}
               />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#e5e5e5', strokeWidth: 1 }} />
               <Area
                 type="monotone"
                 dataKey="revenue"
                 stroke={COLORS.primary}
-                strokeWidth={2.5}
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
                 name="revenue"
+                dot={false}
+                activeDot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: COLORS.primary }}
               />
             </AreaChart>
           </ResponsiveContainer>
         )}
       </div>
-    </motion.div>
+    </Wrapper>
   );
 }
 
@@ -189,27 +211,29 @@ interface ChannelBreakdownProps {
 
 export function ChannelBreakdown({
   data,
-  title = 'Répartition par canal',
+  title = 'Canaux',
   isLoading = false,
 }: ChannelBreakdownProps) {
+  const [mounted, setMounted] = useState(false);
   const hasData = data.length > 0 && data.some(d => d.value > 0);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const Wrapper = mounted ? motion.div : 'div';
+  const wrapperProps = mounted ? {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, delay: 0.15, ease: [0.25, 0.46, 0.45, 0.94] },
+  } : {};
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="rounded-2xl border border-neutral-200 bg-white p-6"
+    <Wrapper
+      {...wrapperProps}
+      className="rounded-2xl border border-neutral-200/80 bg-white p-4 sm:p-6"
     >
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50">
-          <PieChartIcon className="h-5 w-5 text-purple-600" />
-        </div>
-        <div>
-          <h3 className="font-semibold text-neutral-900">{title}</h3>
-          <p className="text-sm text-neutral-500">Distribution des revenus</p>
-        </div>
-      </div>
+      <h3 className="mb-5 text-[13px] font-medium text-neutral-500">{title}</h3>
 
       {isLoading ? (
         <div className="h-64">
@@ -220,19 +244,19 @@ export function ChannelBreakdown({
           <ChartEmpty message="Aucune donnée par canal" />
         </div>
       ) : (
-        <div className="flex flex-col gap-6">
-          {/* Donut Chart */}
-          <div className="mx-auto h-40 w-40">
+        <div className="flex flex-col gap-5">
+          {/* Donut */}
+          <div className="mx-auto h-36 w-36">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={45}
-                  outerRadius={65}
+                  innerRadius={42}
+                  outerRadius={62}
                   dataKey="value"
-                  paddingAngle={3}
+                  paddingAngle={2}
                   strokeWidth={0}
                 >
                   {data.map((entry) => (
@@ -246,36 +270,37 @@ export function ChannelBreakdown({
             </ResponsiveContainer>
           </div>
 
-          {/* Legend */}
-          <div className="space-y-3">
-            {data.slice(0, 5).map((item) => (
-              <div key={item.channel} className="flex items-center gap-3">
-                <div
-                  className="h-3 w-3 flex-shrink-0 rounded-full"
-                  style={{
-                    backgroundColor: item.color || CHANNEL_COLORS[item.channel] || COLORS.neutral,
-                  }}
-                />
-                <span className="flex-1 truncate text-sm font-medium text-neutral-700">
-                  {item.label || item.channel}
-                </span>
-                <span className="text-sm font-semibold text-neutral-900">
-                  {formatCurrency(item.value)}
-                </span>
-                <span className="w-12 text-right text-xs text-neutral-500">
-                  {item.percentage.toFixed(1)}%
-                </span>
-              </div>
-            ))}
+          {/* Channel list */}
+          <div className="space-y-2.5">
+            {data.slice(0, 5).map((item) => {
+              const color = item.color || CHANNEL_COLORS[item.channel] || COLORS.neutral;
+              return (
+                <div key={item.channel} className="group flex items-center gap-3">
+                  <div
+                    className="h-2 w-2 flex-shrink-0 rounded-full"
+                    style={{ backgroundColor: color }}
+                  />
+                  <span className="flex-1 truncate text-[13px] text-neutral-600">
+                    {item.label || item.channel}
+                  </span>
+                  <span className="text-[13px] font-semibold tabular-nums text-neutral-900">
+                    {formatCurrency(item.value)}
+                  </span>
+                  <span className="w-10 text-right text-[11px] tabular-nums text-neutral-400">
+                    {item.percentage.toFixed(0)}%
+                  </span>
+                </div>
+              );
+            })}
             {data.length > 5 && (
-              <p className="text-center text-xs text-neutral-400">
-                +{data.length - 5} autres canaux
+              <p className="pt-1 text-center text-[11px] text-neutral-400">
+                +{data.length - 5} autres
               </p>
             )}
           </div>
         </div>
       )}
-    </motion.div>
+    </Wrapper>
   );
 }
 
@@ -290,41 +315,43 @@ export function ConversionsChart({
   title = 'Conversions par jour',
   isLoading = false,
 }: ConversionsChartProps) {
+  const [mounted, setMounted] = useState(false);
   const hasData = data.length > 0 && data.some(d => d.conversions > 0);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-neutral-200 bg-white p-6"
-    >
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-          <BarChart3 className="h-5 w-5 text-blue-600" />
-        </div>
-        <div>
-          <h3 className="font-semibold text-neutral-900">{title}</h3>
-          <p className="text-sm text-neutral-500">Nombre de conversions</p>
-        </div>
-      </div>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-      <div className="h-64">
+  const Wrapper = mounted ? motion.div : 'div';
+  const wrapperProps = mounted ? {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+  } : {};
+
+  return (
+    <Wrapper
+      {...wrapperProps}
+      className="rounded-2xl border border-neutral-200/80 bg-white p-4 sm:p-6"
+    >
+      <h3 className="mb-5 text-[13px] font-medium text-neutral-500">{title}</h3>
+
+      <div className="h-56">
         {isLoading ? (
           <ChartSkeleton />
         ) : !hasData ? (
           <ChartEmpty message="Aucune conversion sur cette période" />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+            <BarChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="0" stroke="#f5f5f5" vertical={false} />
               <XAxis
                 dataKey="date"
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                tick={{ fontSize: 11, fill: '#a3a3a3' }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                tick={{ fontSize: 11, fill: '#a3a3a3' }}
                 tickLine={false}
                 axisLine={false}
                 allowDecimals={false}
@@ -332,22 +359,24 @@ export function ConversionsChart({
               <Tooltip
                 contentStyle={{
                   backgroundColor: 'white',
-                  border: 'none',
+                  border: '1px solid #f0f0f0',
                   borderRadius: '12px',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  padding: '12px 16px',
+                  boxShadow: '0 4px 12px -2px rgba(0,0,0,0.08)',
+                  padding: '10px 14px',
+                  fontSize: '13px',
                 }}
                 formatter={(value: number) => [formatNumber(value), 'Conversions']}
               />
               <Bar
                 dataKey="conversions"
                 fill={COLORS.secondary}
-                radius={[6, 6, 0, 0]}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={32}
               />
             </BarChart>
           </ResponsiveContainer>
         )}
       </div>
-    </motion.div>
+    </Wrapper>
   );
 }

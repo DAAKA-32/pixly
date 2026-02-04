@@ -60,8 +60,8 @@ export function InfiniteLogos({
   return (
     <div className={`relative overflow-hidden ${className}`}>
       {/* Gradient masks for smooth edges */}
-      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-20 bg-gradient-to-r from-white to-transparent" />
-      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-white to-transparent" />
+      <div className="pointer-events-none absolute left-0 top-0 z-10 h-full w-12 sm:w-20 bg-gradient-to-r from-neutral-50 to-transparent" />
+      <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-12 sm:w-20 bg-gradient-to-l from-neutral-50 to-transparent" />
 
       {/* Scrolling container */}
       <div
@@ -72,21 +72,21 @@ export function InfiniteLogos({
         }}
       >
         {/* First set of logos */}
-        <div data-logo-set="1" className="flex shrink-0 items-center gap-12 px-6">
+        <div data-logo-set="1" className="flex shrink-0 items-center gap-6 sm:gap-12 px-3 sm:px-6">
           {logos.map((logo, index) => (
             <LogoItem key={`1-${index}`} logo={logo} />
           ))}
         </div>
 
         {/* Duplicate for seamless loop */}
-        <div data-logo-set="2" className="flex shrink-0 items-center gap-12 px-6">
+        <div data-logo-set="2" className="flex shrink-0 items-center gap-6 sm:gap-12 px-3 sm:px-6">
           {logos.map((logo, index) => (
             <LogoItem key={`2-${index}`} logo={logo} />
           ))}
         </div>
 
         {/* Third set for extra smoothness */}
-        <div data-logo-set="3" className="flex shrink-0 items-center gap-12 px-6">
+        <div data-logo-set="3" className="flex shrink-0 items-center gap-6 sm:gap-12 px-3 sm:px-6">
           {logos.map((logo, index) => (
             <LogoItem key={`3-${index}`} logo={logo} />
           ))}
@@ -122,7 +122,7 @@ function LogoItem({ logo }: { logo: Logo }) {
   return (
     <motion.div
       whileHover={{ scale: 1.05 }}
-      className="flex shrink-0 items-center gap-3 rounded-xl bg-white/80 backdrop-blur-sm border border-neutral-200/50 px-5 py-3 shadow-sm transition-shadow hover:shadow-md"
+      className="flex shrink-0 items-center gap-2.5 sm:gap-3 rounded-xl bg-white/80 backdrop-blur-sm border border-neutral-200/50 px-3.5 sm:px-5 py-2.5 sm:py-3 shadow-sm transition-shadow hover:shadow-md"
     >
       {logo.src && !imageError ? (
         <div className="relative h-6 w-6">
@@ -139,7 +139,7 @@ function LogoItem({ logo }: { logo: Logo }) {
           {logo.name.charAt(0)}
         </div>
       )}
-      <span className="whitespace-nowrap text-sm font-medium text-neutral-700">
+      <span className="whitespace-nowrap text-xs sm:text-sm font-medium text-neutral-700">
         {logo.name}
       </span>
     </motion.div>

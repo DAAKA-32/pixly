@@ -1,103 +1,151 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Skeleton, SkeletonButton, SkeletonTable } from '@/components/ui/skeleton';
-
 // ===========================================
 // PIXLY - Billing Loading
-// Loading state for billing & subscription page
+// Matches the trust-focused billing layout
 // ===========================================
 
 export default function BillingLoading() {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.3 }}
-      className="space-y-6"
-    >
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Skeleton className="h-7 w-32" />
-          <Skeleton className="mt-2 h-4 w-64" />
-        </div>
-      </div>
-
-      {/* Current Plan Card */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-14 w-14 rounded-2xl" />
-            <div>
-              <Skeleton className="h-6 w-32" />
-              <Skeleton className="mt-2 h-4 w-48" />
-            </div>
-          </div>
-          <div className="text-right">
-            <Skeleton className="h-8 w-24" />
-            <Skeleton className="mt-1 h-4 w-16" />
-          </div>
-        </div>
-
-        {/* Usage Stats */}
-        <div className="mt-6 grid grid-cols-3 gap-6 border-t border-neutral-100 pt-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i}>
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="mt-2 h-6 w-32" />
-              <Skeleton className="mt-2 h-2 w-full rounded-full" />
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex gap-3">
-          <SkeletonButton size="md" width="w-36" />
-          <SkeletonButton size="md" width="w-32" />
-        </div>
-      </div>
-
-      {/* Plans Grid */}
       <div>
-        <Skeleton className="mb-4 h-6 w-48" />
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-2xl border border-neutral-200 bg-white p-6">
-              <Skeleton className="h-5 w-24" />
-              <div className="mt-4 flex items-baseline gap-1">
-                <Skeleton className="h-8 w-20" />
-                <Skeleton className="h-4 w-12" />
-              </div>
-              <Skeleton className="mt-2 h-4 w-32" />
+        <div className="h-6 w-28 animate-pulse rounded-md bg-neutral-100" />
+        <div className="mt-1.5 h-3.5 w-56 animate-pulse rounded bg-neutral-50" />
+      </div>
 
-              <div className="mt-6 space-y-3">
-                {[1, 2, 3, 4].map((j) => (
-                  <div key={j} className="flex items-center gap-2">
-                    <Skeleton className="h-4 w-4 rounded-full" />
-                    <Skeleton className="h-4 flex-1" />
-                  </div>
+      {/* Abonnement */}
+      <div className="rounded-xl border border-neutral-200/80 bg-white">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 animate-pulse rounded bg-neutral-100" />
+            <div className="h-4 w-24 animate-pulse rounded bg-neutral-100" />
+          </div>
+          <div className="h-6 w-16 animate-pulse rounded-full bg-neutral-100" />
+        </div>
+        <div className="p-5 space-y-4">
+          <div className="flex items-baseline gap-3">
+            <div className="h-6 w-20 animate-pulse rounded bg-neutral-100" />
+            <div className="h-3.5 w-40 animate-pulse rounded bg-neutral-50" />
+          </div>
+          <div className="space-y-2.5">
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-[160px] animate-pulse rounded bg-neutral-50" />
+              <div className="h-3.5 w-32 animate-pulse rounded bg-neutral-100" />
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3.5 w-[160px] animate-pulse rounded bg-neutral-50" />
+              <div className="h-3.5 w-56 animate-pulse rounded bg-neutral-50" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 pt-1">
+            <div className="h-9 w-40 animate-pulse rounded-xl bg-neutral-100" />
+            <div className="h-3.5 w-24 animate-pulse rounded bg-neutral-50" />
+          </div>
+        </div>
+      </div>
+
+      {/* Moyen de paiement */}
+      <div className="rounded-xl border border-neutral-200/80 bg-white">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-4 animate-pulse rounded bg-neutral-100" />
+            <div className="h-4 w-32 animate-pulse rounded bg-neutral-100" />
+          </div>
+          <div className="h-3.5 w-14 animate-pulse rounded bg-neutral-50" />
+        </div>
+        <div className="p-5">
+          <div className="flex items-center gap-4">
+            <div className="h-10 w-16 animate-pulse rounded-lg bg-neutral-100" />
+            <div>
+              <div className="h-3.5 w-36 animate-pulse rounded bg-neutral-100" />
+              <div className="mt-1.5 h-3 w-20 animate-pulse rounded bg-neutral-50" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Historique */}
+      <div className="rounded-xl border border-neutral-200/80 bg-white">
+        <div className="flex items-center gap-2 px-5 py-4 border-b border-neutral-100">
+          <div className="h-4 w-4 animate-pulse rounded bg-neutral-100" />
+          <div className="h-4 w-40 animate-pulse rounded bg-neutral-100" />
+        </div>
+
+        {/* Desktop table skeleton */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="border-b border-neutral-100">
+                {['w-20', 'w-32', 'w-14', 'w-14', 'w-10'].map((w, i) => (
+                  <th key={i} className="px-5 py-3">
+                    <div className={`h-3 ${w} animate-pulse rounded bg-neutral-50`} />
+                  </th>
                 ))}
-              </div>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-50">
+              {[1, 2, 3, 4].map((row) => (
+                <tr key={row}>
+                  <td className="px-5 py-3">
+                    <div className="h-3.5 w-28 animate-pulse rounded bg-neutral-50" />
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="h-3.5 w-36 animate-pulse rounded bg-neutral-100" />
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="h-3.5 w-12 animate-pulse rounded bg-neutral-100 ml-auto" />
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-200" />
+                      <div className="h-3.5 w-12 animate-pulse rounded bg-neutral-50" />
+                    </div>
+                  </td>
+                  <td className="px-5 py-3">
+                    <div className="h-3.5 w-8 animate-pulse rounded bg-neutral-50 ml-auto" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-              <SkeletonButton size="md" width="w-full" className="mt-6" />
+        {/* Mobile card skeletons */}
+        <div className="sm:hidden divide-y divide-neutral-100">
+          {[1, 2, 3, 4].map((row) => (
+            <div key={row} className="px-4 py-3.5 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="h-3.5 w-16 animate-pulse rounded bg-neutral-100" />
+                <div className="flex items-center gap-1.5">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-neutral-200" />
+                  <div className="h-3 w-12 animate-pulse rounded bg-neutral-50" />
+                </div>
+              </div>
+              <div className="h-3 w-40 animate-pulse rounded bg-neutral-50" />
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-28 animate-pulse rounded bg-neutral-50" />
+                <div className="h-3 w-8 animate-pulse rounded bg-neutral-50" />
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Billing History */}
-      <div className="rounded-2xl border border-neutral-200 bg-white p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Skeleton className="h-10 w-10 rounded-xl" />
-            <div>
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="mt-1 h-3 w-56" />
-            </div>
-          </div>
+      {/* Annulation */}
+      <div className="flex flex-col gap-3 rounded-xl border border-neutral-200/80 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+        <div>
+          <div className="h-3.5 w-36 animate-pulse rounded bg-neutral-100" />
+          <div className="mt-1.5 h-3 w-64 animate-pulse rounded bg-neutral-50" />
         </div>
-        <SkeletonTable rows={5} columns={4} className="border-0 p-0" />
+        <div className="h-3.5 w-14 animate-pulse rounded bg-neutral-50" />
       </div>
-    </motion.div>
+
+      {/* Security note */}
+      <div className="flex items-center justify-center gap-2 py-1">
+        <div className="h-3.5 w-3.5 animate-pulse rounded bg-neutral-100" />
+        <div className="h-3 w-72 animate-pulse rounded bg-neutral-50" />
+      </div>
+    </div>
   );
 }

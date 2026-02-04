@@ -11,7 +11,17 @@
       "Bash(ls -la \"c:\\\\Users\\\\emili\\\\OneDrive\\\\Documents\\\\M1001\\\\Code\\\\Clone Cometly\\\\src\\\\app\"\" | grep -E \"css)",
       "Bash(style \")",
       "Bash(npx next build:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh repo create:*)",
+      "WebFetch(domain:medium.com)",
+      "Bash(npx tsc:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find:*)",
+      "Bash(if exist .next rmdir /s /q .next)",
+      "Bash(curl:*)",
+      "Bash(powershell -Command \"Remove-Item -Path ''c:\\\\Users\\\\emili\\\\OneDrive\\\\Documents\\\\M1001\\\\Code\\\\Clone Cometly\\\\.next'' -Recurse -Force -ErrorAction SilentlyContinue; Write-Host ''Cleaned''\")"
     ]
   }
 }

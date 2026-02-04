@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 // ===========================================
 // PIXLY - Dashboard Skeleton Loading
 // Premium loading experience matching final layout
+// Responsive: desktop sidebar + mobile header
 // ===========================================
 
 function SkeletonPulse({
@@ -139,25 +140,28 @@ function TableSkeleton() {
 
 function SidebarSkeleton() {
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-neutral-200 bg-white">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-neutral-200 bg-white hidden lg:block">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b border-neutral-200 px-6">
-          <SkeletonPulse className="h-8 w-8 rounded-lg" />
-          <SkeletonPulse className="h-6 w-24" />
+        <div className="flex h-16 items-center gap-2 border-b border-neutral-200 px-4">
+          <SkeletonPulse className="h-7 w-7 rounded-xl" />
+          <SkeletonPulse className="h-5 w-16" />
         </div>
 
-        {/* Workspace Selector */}
-        <div className="border-b border-neutral-200 p-4">
-          <div className="rounded-xl bg-neutral-50 px-4 py-3">
-            <SkeletonPulse className="h-4 w-28" />
-            <SkeletonPulse className="mt-1 h-3 w-20" />
+        {/* Workspace */}
+        <div className="border-b border-neutral-200 p-3">
+          <div className="flex items-center gap-3 rounded-xl bg-neutral-50 px-3 py-2.5">
+            <SkeletonPulse className="h-9 w-9 rounded-lg" />
+            <div>
+              <SkeletonPulse className="h-4 w-24" />
+              <SkeletonPulse className="mt-1 h-3 w-16" />
+            </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
-          {[1, 2, 3, 4, 5].map((i) => (
+        <nav className="flex-1 space-y-1 p-3">
+          {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
               <SkeletonPulse className="h-5 w-5" />
               <SkeletonPulse className="h-4 w-20" />
@@ -165,9 +169,17 @@ function SidebarSkeleton() {
           ))}
         </nav>
 
+        {/* Help */}
+        <div className="border-t border-neutral-200 p-3">
+          <div className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+            <SkeletonPulse className="h-5 w-5" />
+            <SkeletonPulse className="h-4 w-12" />
+          </div>
+        </div>
+
         {/* User */}
-        <div className="border-t border-neutral-200 p-4">
-          <div className="flex items-center gap-3">
+        <div className="border-t border-neutral-200 p-3">
+          <div className="flex items-center gap-3 p-2">
             <SkeletonPulse className="h-10 w-10 rounded-full" />
             <div className="flex-1">
               <SkeletonPulse className="h-4 w-24" />
@@ -180,14 +192,26 @@ function SidebarSkeleton() {
   );
 }
 
+function MobileHeaderSkeleton() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center border-b border-neutral-200 bg-white px-4 lg:hidden">
+      <SkeletonPulse className="h-10 w-10 rounded-xl" />
+      <div className="flex flex-1 items-center justify-center gap-2">
+        <SkeletonPulse className="h-7 w-7 rounded-xl" />
+        <SkeletonPulse className="h-5 w-14" />
+      </div>
+      <div className="w-9" />
+    </div>
+  );
+}
+
 export function DashboardSkeleton() {
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Sidebar Skeleton */}
       <SidebarSkeleton />
+      <MobileHeaderSkeleton />
 
-      {/* Main Content */}
-      <main className="ml-64 min-h-screen p-8">
+      <main className="dashboard-content min-h-screen px-4 pb-6 pt-20 lg:ml-64 lg:px-8 lg:pb-8 lg:pt-8">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -257,4 +281,4 @@ export function DashboardLoadingOverlay() {
   );
 }
 
-export { MetricCardSkeleton, ChartSkeleton, TableSkeleton, SidebarSkeleton };
+export { MetricCardSkeleton, ChartSkeleton, TableSkeleton, SidebarSkeleton, MobileHeaderSkeleton };

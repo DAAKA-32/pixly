@@ -14,6 +14,9 @@ import {
   Eye,
   EyeOff,
   Sparkles,
+  BarChart3,
+  Target,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
@@ -29,7 +32,7 @@ import { LoginTransition } from '@/components/auth/auth-transition';
 
 // ===========================================
 // PIXLY - Login/Signup Page Premium
-// Clean auth flow with micro-interactions
+// Full light theme - Clean & cohesive
 // ===========================================
 
 type AuthMode = 'login' | 'signup';
@@ -165,13 +168,11 @@ export default function AuthPage() {
       if (mode === 'login') {
         await signIn(email, password);
         setIsRedirecting(true);
-        // Set flag for dashboard to show welcome toast
         sessionStorage.setItem('pixly_login_success', 'true');
         router.replace('/dashboard');
       } else {
         await signUp(email, password, name);
         setIsRedirecting(true);
-        // Set flag for onboarding to show welcome toast
         sessionStorage.setItem('pixly_signup_success', 'true');
         router.replace('/onboarding');
       }
@@ -193,7 +194,6 @@ export default function AuthPage() {
     try {
       await signInGoogle();
       setIsRedirecting(true);
-      // Set flag for welcome toast
       if (mode === 'login') {
         sessionStorage.setItem('pixly_login_success', 'true');
       } else {
@@ -231,7 +231,7 @@ export default function AuthPage() {
     exit: { opacity: 0, height: 0, marginBottom: 0, transition: { duration: 0.2 } },
   };
 
-  // Fullscreen loader: shown immediately on submit, transitions to redirect message on success
+  // Fullscreen loader
   if (isLoading || isRedirecting) {
     return (
       <LoginTransition
@@ -247,35 +247,32 @@ export default function AuthPage() {
 
   return (
     <div className="min-h-screen flex bg-white">
-      {/* Back button */}
+      {/* Back button - consistent light style */}
       <Link
         href="/"
-        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 backdrop-blur-sm border border-neutral-200 shadow-sm text-neutral-600 hover:text-neutral-900 hover:border-neutral-300 hover:shadow-md transition-all duration-200 lg:bg-neutral-800/80 lg:border-neutral-700 lg:text-neutral-300 lg:hover:text-white lg:hover:bg-neutral-800 lg:hover:border-neutral-600"
+        className="fixed top-5 left-5 z-50 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/90 backdrop-blur-sm border border-neutral-200 shadow-sm text-neutral-600 hover:text-neutral-900 hover:border-neutral-300 hover:shadow-md transition-all duration-200"
       >
         <ArrowLeft className="h-4 w-4" />
         <span className="text-sm font-medium">Retour</span>
       </Link>
 
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-[48%] relative bg-neutral-900 items-center justify-center overflow-hidden">
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-900/30 via-transparent to-primary-800/20" />
-
-        {/* Subtle pattern */}
+      {/* Left Panel - Light Branding */}
+      <div className="hidden lg:flex lg:w-[48%] relative bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 items-center justify-center overflow-hidden border-r border-neutral-100">
+        {/* Subtle grid pattern */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.4]"
           style={{
-            backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)',
-            backgroundSize: '32px 32px'
+            backgroundImage: 'radial-gradient(circle, #e5e7eb 1px, transparent 1px)',
+            backgroundSize: '24px 24px'
           }}
         />
 
-        {/* Floating orbs */}
-        <div className="absolute top-1/4 left-1/4 h-64 w-64 rounded-full bg-primary-500/10 blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-primary-400/10 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        {/* Floating decorative elements */}
+        <div className="absolute top-20 left-20 h-72 w-72 rounded-full bg-primary-100/50 blur-3xl" />
+        <div className="absolute bottom-20 right-20 h-56 w-56 rounded-full bg-emerald-100/40 blur-3xl" />
 
         {/* Content */}
-        <div className="relative z-10 flex flex-col items-center text-center px-12 max-w-md">
+        <div className="relative z-10 flex flex-col items-center text-center px-12 max-w-lg">
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -283,7 +280,7 @@ export default function AuthPage() {
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <Logo size="xl" variant="white" />
+            <Logo size="xl" />
           </motion.div>
 
           {/* Tagline */}
@@ -291,20 +288,44 @@ export default function AuthPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-white/60 text-lg leading-relaxed"
+            className="text-neutral-600 text-xl leading-relaxed font-medium"
           >
             L'attribution marketing qui vous dit la vérité sur vos publicités.
           </motion.p>
+
+          {/* Feature highlights */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12 space-y-4 w-full"
+          >
+            {[
+              { icon: BarChart3, text: 'Attribution multi-touch précise' },
+              { icon: Target, text: 'Tracking post-iOS 14 fiable' },
+              { icon: Zap, text: 'Installation en moins de 5 minutes' },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/80 border border-neutral-100 shadow-sm"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-50">
+                  <item.icon className="h-4 w-4 text-primary-600" />
+                </div>
+                <span className="text-sm font-medium text-neutral-700">{item.text}</span>
+              </div>
+            ))}
+          </motion.div>
 
           {/* Trust badges */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-12 flex flex-col items-center gap-4"
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="mt-10 flex flex-col items-center gap-3"
           >
-            <div className="flex items-center gap-2 text-white/40 text-sm">
-              <Sparkles className="h-4 w-4" />
+            <div className="flex items-center gap-2 text-neutral-500 text-sm">
+              <Sparkles className="h-4 w-4 text-primary-500" />
               <span>+500 entreprises nous font confiance</span>
             </div>
             <div className="flex items-center gap-1">
@@ -313,14 +334,14 @@ export default function AuthPage() {
                   <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                 </svg>
               ))}
-              <span className="ml-2 text-white/50 text-sm">4.9/5</span>
+              <span className="ml-2 text-neutral-600 text-sm font-medium">4.9/5</span>
             </div>
           </motion.div>
         </div>
       </div>
 
       {/* Right Panel - Form */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen bg-white">
         <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
           <div className="w-full max-w-[400px]">
             {/* Mobile Logo */}

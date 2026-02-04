@@ -1,13 +1,9 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn, formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
-
-// ===========================================
-// PIXLY - Metric Card Component
-// ===========================================
 
 interface MetricCardProps {
   title: string;
@@ -20,6 +16,7 @@ interface MetricCardProps {
   className?: string;
   description?: string;
   isLoading?: boolean;
+  accent?: string;
 }
 
 export function MetricCard({
@@ -33,16 +30,20 @@ export function MetricCard({
   className,
   description,
   isLoading = false,
+  accent,
 }: MetricCardProps) {
-  // Calculate change percentage
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const change = previousValue
     ? ((value - previousValue) / previousValue) * 100
     : null;
 
-  // Determine trend from change if not provided
   const actualTrend = trend || (change ? (change > 0 ? 'up' : change < 0 ? 'down' : 'neutral') : 'neutral');
 
-  // Format value based on type
   const formattedValue = (() => {
     switch (format) {
       case 'currency':
@@ -56,76 +57,90 @@ export function MetricCard({
     }
   })();
 
-  const TrendIcon = actualTrend === 'up' ? TrendingUp : actualTrend === 'down' ? TrendingDown : Minus;
+  const Wrapper = mounted ? motion.div : 'div';
+  const wrapperProps = mounted ? {
+    initial: { opacity: 0, y: 12 },
+    animate: { opacity: 1, y: 0 },
+    transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] },
+  } : {};
 
   if (isLoading) {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={cn('metric-card', className)}
+      <Wrapper
+        {...wrapperProps}
+        className={cn('relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-5', className)}
       >
-        <div className="flex items-start justify-between">
-          <div className="h-4 w-20 animate-pulse rounded bg-neutral-200" />
-          {icon && (
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-100">
-              <div className="h-5 w-5 animate-pulse rounded bg-neutral-200" />
-            </div>
-          )}
+        <div className="space-y-4">
+          <div className="h-3.5 w-20 animate-pulse rounded-md bg-neutral-100" />
+          <div className="h-8 w-28 animate-pulse rounded-md bg-neutral-100" />
+          <div className="h-3 w-16 animate-pulse rounded-md bg-neutral-50" />
         </div>
-        <div className="mt-4">
-          <div className="h-8 w-32 animate-pulse rounded bg-neutral-200" />
-          <div className="mt-2 h-4 w-24 animate-pulse rounded bg-neutral-100" />
-        </div>
-      </motion.div>
+      </Wrapper>
     );
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cn('metric-card', className)}
+    <Wrapper
+      {...wrapperProps}
+      className={cn(
+        'group relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-5',
+        'transition-all duration-300 hover:border-neutral-300 hover:shadow-soft',
+        className
+      )}
     >
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-neutral-500">{title}</p>
-          {description && (
-            <p className="text-xs text-neutral-400">{description}</p>
-          )}
-        </div>
+      {/* Subtle top accent line */}
+      {accent && (
+        <div
+          className="absolute inset-x-0 top-0 h-[2px]"
+          style={{ backgroundColor: accent }}
+        />
+      )}
+
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[13px] font-medium tracking-wide text-neutral-500">{title}</p>
         {icon && (
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-50 text-neutral-400 transition-colors group-hover:bg-neutral-100 group-hover:text-neutral-500">
             {icon}
           </div>
         )}
       </div>
 
-      <div className="mt-4">
-        <p className="text-3xl font-bold text-neutral-900">{formattedValue}</p>
+      <div className="mt-3">
+        <p className="text-[28px] font-semibold leading-none tracking-tight text-neutral-900">
+          {formattedValue}
+        </p>
+
+        {description && (
+          <p className="mt-1.5 text-[11px] text-neutral-400">{description}</p>
+        )}
 
         {change !== null && (
-          <div className="mt-2 flex items-center gap-1">
-            <div
+          <div className="mt-3 flex items-center gap-2">
+            <span
               className={cn(
-                'flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-medium',
-                actualTrend === 'up' && 'bg-green-50 text-green-700',
-                actualTrend === 'down' && 'bg-red-50 text-red-700',
-                actualTrend === 'neutral' && 'bg-neutral-100 text-neutral-600'
+                'inline-flex items-center gap-0.5 text-[12px] font-semibold tabular-nums',
+                actualTrend === 'up' && 'text-emerald-600',
+                actualTrend === 'down' && 'text-red-500',
+                actualTrend === 'neutral' && 'text-neutral-400'
               )}
             >
-              <TrendIcon className="h-3 w-3" />
-              <span>{formatPercent(Math.abs(change))}</span>
-            </div>
-            <span className="text-xs text-neutral-500">vs période préc.</span>
+              {actualTrend === 'up' ? (
+                <TrendingUp className="h-3 w-3" />
+              ) : actualTrend === 'down' ? (
+                <TrendingDown className="h-3 w-3" />
+              ) : (
+                <Minus className="h-3 w-3" />
+              )}
+              {formatPercent(Math.abs(change))}
+            </span>
+            <span className="text-[11px] text-neutral-400">vs préc.</span>
           </div>
         )}
       </div>
-    </motion.div>
+    </Wrapper>
   );
 }
 
-// Mini variant for compact displays
 export function MetricCardMini({
   title,
   value,
@@ -151,9 +166,9 @@ export function MetricCardMini({
   })();
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-4">
-      <p className="text-xs font-medium text-neutral-500">{title}</p>
-      <p className="mt-1 text-xl font-bold text-neutral-900">{formattedValue}</p>
+    <div className="rounded-xl border border-neutral-200/80 bg-white p-3.5">
+      <p className="text-[11px] font-medium text-neutral-500">{title}</p>
+      <p className="mt-1 text-lg font-semibold tabular-nums text-neutral-900">{formattedValue}</p>
     </div>
   );
 }

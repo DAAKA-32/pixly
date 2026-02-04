@@ -1,13 +1,8 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { AnimatedSection } from './animations';
-
-// ===========================================
-// PIXLY - Founder Section
-// Minimal centered design with dark background
-// ===========================================
 
 interface FounderSectionProps {
   name?: string;
@@ -18,50 +13,49 @@ interface FounderSectionProps {
 
 export function FounderSection({
   name = 'Emilien Nepveu',
-  role = 'Fondateur & CEO',
+  role = 'Fondateur & CEO de Pixly',
   imageSrc = '/CEO.png',
-  quote = 'Pixly n\'est pas simplement un outil de tracking, c\'est la fin des décisions marketing à l\'aveugle. Nous donnons aux annonceurs la clarté qu\'ils méritent pour scaler sereinement.',
+  quote = "Pixly n'est pas simplement un outil de tracking, c'est la fin des décisions marketing à l'aveugle. Nous donnons aux annonceurs la clarté qu'ils méritent pour scaler sereinement.",
 }: FounderSectionProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // SSR-safe wrapper
+  const MotionDiv = mounted ? motion.div : 'div';
+
   return (
-    <section className="relative py-24 sm:py-32 bg-neutral-900 overflow-hidden">
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-900 via-neutral-800/50 to-neutral-900" />
-
-      <div className="relative mx-auto max-w-4xl px-6 sm:px-8">
-        <AnimatedSection>
-          <div className="text-center">
+    <section className="relative py-24 sm:py-32 bg-neutral-50 overflow-hidden">
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        {/* Content - centered testimonial style */}
+        {mounted ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            viewport={{ once: true }}
+            className="text-center"
+          >
             {/* Quote */}
-            <motion.blockquote
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              viewport={{ once: true }}
-              className="text-2xl sm:text-3xl md:text-4xl font-semibold text-white leading-snug sm:leading-snug"
-            >
+            <blockquote className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-900 leading-snug sm:leading-snug lg:leading-snug">
               "{quote}"
-            </motion.blockquote>
+            </blockquote>
 
-            {/* Name & Role */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-              viewport={{ once: true }}
-              className="mt-10"
-            >
-              <p className="text-lg font-medium text-white">{name}</p>
-              <p className="mt-1 text-sm text-neutral-400">{role}</p>
-            </motion.div>
+            {/* Name */}
+            <p className="mt-10 text-lg font-semibold text-neutral-900">
+              {name}
+            </p>
+
+            {/* Role */}
+            <p className="mt-1 text-sm text-neutral-500 font-mono tracking-wide">
+              {role}
+            </p>
 
             {/* Avatar */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              viewport={{ once: true }}
-              className="mt-8 flex justify-center"
-            >
-              <div className="relative h-16 w-16 overflow-hidden rounded-full border-2 border-neutral-700 bg-neutral-800">
+            <div className="mt-8 flex justify-center">
+              <div className="relative h-16 w-16 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
                 <Image
                   src={imageSrc}
                   alt={name}
@@ -70,9 +64,39 @@ export function FounderSection({
                   sizes="64px"
                 />
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
+        ) : (
+          <div className="text-center">
+            {/* Quote */}
+            <blockquote className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-neutral-900 leading-snug sm:leading-snug lg:leading-snug">
+              "{quote}"
+            </blockquote>
+
+            {/* Name */}
+            <p className="mt-10 text-lg font-semibold text-neutral-900">
+              {name}
+            </p>
+
+            {/* Role */}
+            <p className="mt-1 text-sm text-neutral-500 font-mono tracking-wide">
+              {role}
+            </p>
+
+            {/* Avatar */}
+            <div className="mt-8 flex justify-center">
+              <div className="relative h-16 w-16 overflow-hidden rounded-full ring-4 ring-white shadow-lg">
+                <Image
+                  src={imageSrc}
+                  alt={name}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              </div>
+            </div>
           </div>
-        </AnimatedSection>
+        )}
       </div>
     </section>
   );

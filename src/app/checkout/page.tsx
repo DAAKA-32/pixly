@@ -9,7 +9,6 @@ import {
   Sparkles,
   CreditCard,
   Shield,
-  Zap,
   Loader2,
   AlertCircle,
   Gift,
@@ -20,8 +19,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { PRICING_PLANS, STRIPE_CONFIG, getAnnualSavings } from '@/lib/stripe/config';
 
 // ===========================================
-// PIXLY - Checkout Page
-// Premium checkout with Stripe integration
+// PIXLY - Checkout
+// Page de souscription claire et rassurante
 // ===========================================
 
 function CheckoutContent() {
@@ -52,10 +51,8 @@ function CheckoutContent() {
     if (planId && PRICING_PLANS.find((p) => p.id === planId)) {
       setSelectedPlanId(planId);
     } else if (!planId) {
-      // Default to Growth plan
       setSelectedPlanId('growth');
     } else {
-      // Invalid plan - redirect
       router.replace('/#pricing');
     }
   }, [isAuthenticated, authLoading, router, searchParams]);
@@ -87,16 +84,15 @@ function CheckoutContent() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout session');
+        throw new Error(data.error || 'Impossible de procéder au paiement');
       }
 
-      // Redirect to Stripe Checkout
       if (data.url) {
         window.location.href = data.url;
       }
     } catch (err) {
       console.error('Checkout error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
       setIsCheckoutLoading(false);
     }
@@ -107,7 +103,7 @@ function CheckoutContent() {
       <div className="flex min-h-screen items-center justify-center bg-neutral-50">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-          <p className="text-sm text-neutral-500">Loading...</p>
+          <p className="text-sm text-neutral-500">Chargement...</p>
         </div>
       </div>
     );
@@ -131,7 +127,7 @@ function CheckoutContent() {
               className="flex items-center gap-2 text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to plans
+              Retour aux offres
             </Link>
           </div>
         </div>
@@ -156,13 +152,13 @@ function CheckoutContent() {
                 <div className="flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-amber-500" />
                   <p className="text-sm text-amber-700">
-                    Checkout was canceled. Feel free to try again or choose a different plan.
+                    Le paiement a été annulé. Vous pouvez réessayer ou choisir une autre offre.
                   </p>
                   <button
                     onClick={() => setIsCanceled(false)}
                     className="ml-auto text-sm text-amber-600 hover:text-amber-700"
                   >
-                    Dismiss
+                    Fermer
                   </button>
                 </div>
               </motion.div>
@@ -185,7 +181,7 @@ function CheckoutContent() {
                     onClick={() => setError(null)}
                     className="ml-auto text-sm text-red-600 hover:text-red-700"
                   >
-                    Dismiss
+                    Fermer
                   </button>
                 </div>
               </motion.div>
@@ -195,10 +191,10 @@ function CheckoutContent() {
           {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl">
-              Start your free trial
+              Commencez votre essai gratuit
             </h1>
             <p className="mt-3 text-lg text-neutral-600">
-              {STRIPE_CONFIG.trial.days} days free trial · No credit card required
+              {STRIPE_CONFIG.trial.days} jours d&apos;essai · Aucune carte bancaire requise
             </p>
           </div>
 
@@ -235,7 +231,7 @@ function CheckoutContent() {
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                Monthly
+                Mensuel
               </button>
               <button
                 onClick={() => setBillingInterval('annual')}
@@ -245,9 +241,9 @@ function CheckoutContent() {
                     : 'text-neutral-600 hover:text-neutral-900'
                 }`}
               >
-                Annual
+                Annuel
                 <span className="ml-2 rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                  Save 20%
+                  −20%
                 </span>
               </button>
             </div>
@@ -270,7 +266,7 @@ function CheckoutContent() {
                       {selectedPlan.popular && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-primary-50 px-2 py-0.5 text-xs font-semibold text-primary-600">
                           <Sparkles className="h-3 w-3" />
-                          Popular
+                          Populaire
                         </span>
                       )}
                     </div>
@@ -284,24 +280,24 @@ function CheckoutContent() {
                 <div className="mb-6 rounded-xl bg-neutral-50 p-4">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold text-neutral-900">${price}</span>
-                    <span className="text-lg text-neutral-500">/month</span>
+                    <span className="text-lg text-neutral-500">/mois</span>
                   </div>
                   {billingInterval === 'annual' && (
                     <p className="mt-1 text-sm text-green-600">
-                      Save ${getAnnualSavings(selectedPlan)}/year with annual billing
+                      Économisez ${getAnnualSavings(selectedPlan)}/an avec la facturation annuelle
                     </p>
                   )}
                   <div className="mt-3 flex items-center gap-2 text-sm text-neutral-600">
                     <Gift className="h-4 w-4 text-primary-500" />
                     <span>
-                      First {STRIPE_CONFIG.trial.days} days free, then ${price}/month
+                      {STRIPE_CONFIG.trial.days} jours gratuits, puis ${price}/mois
                     </span>
                   </div>
                 </div>
 
                 <div className="space-y-3">
                   <p className="text-sm font-semibold text-neutral-700 uppercase tracking-wide">
-                    Included features
+                    Fonctionnalités incluses
                   </p>
                   {selectedPlan.displayFeatures.map((feature, idx) => (
                     <div key={idx} className="flex items-start gap-3">
@@ -325,7 +321,7 @@ function CheckoutContent() {
             >
               <div className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-lg">
                 <h3 className="text-xl font-bold text-neutral-900 mb-6">
-                  Complete your subscription
+                  Confirmer votre abonnement
                 </h3>
 
                 <div className="space-y-6">
@@ -337,10 +333,10 @@ function CheckoutContent() {
                       </div>
                       <div>
                         <h4 className="text-lg font-semibold text-primary-900">
-                          {STRIPE_CONFIG.trial.days}-day free trial
+                          Essai gratuit de {STRIPE_CONFIG.trial.days} jours
                         </h4>
                         <p className="mt-1 text-sm text-primary-700">
-                          No credit card required to start. You'll only be charged after your trial ends.
+                          Aucune carte bancaire requise. Vous ne serez facturé qu&apos;à la fin de votre période d&apos;essai.
                         </p>
                       </div>
                     </div>
@@ -350,15 +346,15 @@ function CheckoutContent() {
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-3 text-sm text-neutral-600">
                       <Shield className="h-5 w-5 text-primary-500" />
-                      <span>Secure checkout powered by Stripe</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-neutral-600">
-                      <Zap className="h-5 w-5 text-primary-500" />
-                      <span>Instant access after sign up</span>
+                      <span>Paiement sécurisé via Stripe</span>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-neutral-600">
                       <Check className="h-5 w-5 text-primary-500" />
-                      <span>Cancel anytime, no questions asked</span>
+                      <span>Accès immédiat après inscription</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-neutral-600">
+                      <Check className="h-5 w-5 text-primary-500" />
+                      <span>Résiliable à tout moment</span>
                     </div>
                   </div>
 
@@ -372,23 +368,23 @@ function CheckoutContent() {
                       {isCheckoutLoading ? (
                         <>
                           <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                          Redirecting to checkout...
+                          Redirection...
                         </>
                       ) : (
                         <>
                           <CreditCard className="mr-2 h-5 w-5" />
-                          Start free trial
+                          Démarrer l&apos;essai gratuit
                         </>
                       )}
                     </Button>
                     <p className="mt-4 text-center text-xs text-neutral-500">
-                      By continuing, you agree to our{' '}
+                      En continuant, vous acceptez nos{' '}
                       <Link href="/terms" className="text-primary-600 hover:underline">
-                        Terms of Service
+                        Conditions d&apos;utilisation
                       </Link>{' '}
-                      and{' '}
+                      et notre{' '}
                       <Link href="/privacy" className="text-primary-600 hover:underline">
-                        Privacy Policy
+                        Politique de confidentialité
                       </Link>
                     </p>
                   </div>
@@ -405,12 +401,12 @@ function CheckoutContent() {
             className="mt-8 rounded-xl border border-neutral-200 bg-white p-6 text-center"
           >
             <p className="text-sm text-neutral-600">
-              <span className="font-semibold text-neutral-900">Questions?</span>
-              {' '}Contact us at{' '}
+              <span className="font-semibold text-neutral-900">Une question ?</span>
+              {' '}Contactez-nous à{' '}
               <a href="mailto:support@pixly.io" className="text-primary-600 hover:underline">
                 support@pixly.io
               </a>
-              {' '}or check our{' '}
+              {' '}ou consultez notre{' '}
               <Link href="/faq" className="text-primary-600 hover:underline">
                 FAQ
               </Link>
@@ -428,7 +424,7 @@ function CheckoutLoading() {
     <div className="flex min-h-screen items-center justify-center bg-neutral-50">
       <div className="flex flex-col items-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-        <p className="text-sm text-neutral-500">Loading...</p>
+        <p className="text-sm text-neutral-500">Chargement...</p>
       </div>
     </div>
   );

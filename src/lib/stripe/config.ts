@@ -74,8 +74,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       annual: 39, // ~$470/year vs $588/year = 20% savings
     },
     stripePriceId: {
-      monthly: 'price_starter_monthly', // Replace with actual Stripe Price ID
-      annual: 'price_starter_annual',   // Replace with actual Stripe Price ID
+      monthly: 'price_1Sw0NcJCRdquuCCsXms6gdmo',
+      annual: 'price_1Sw0NtJCRdquuCCs4jwqKuSU',
     },
     features: {
       adSpendLimit: 25000,
@@ -116,8 +116,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       annual: 79, // ~$950/year vs $1188/year = 20% savings
     },
     stripePriceId: {
-      monthly: 'price_growth_monthly', // Replace with actual Stripe Price ID
-      annual: 'price_growth_annual',   // Replace with actual Stripe Price ID
+      monthly: 'price_1Sw0OLJCRdquuCCsJeCYIryR',
+      annual: 'price_1Sw0OeJCRdquuCCsD5FO6XJ5',
     },
     features: {
       adSpendLimit: 100000,
@@ -163,8 +163,8 @@ export const PRICING_PLANS: PricingPlan[] = [
       annual: 159, // ~$1910/year vs $2388/year = 20% savings
     },
     stripePriceId: {
-      monthly: 'price_scale_monthly', // Replace with actual Stripe Price ID
-      annual: 'price_scale_annual',   // Replace with actual Stripe Price ID
+      monthly: 'price_1Sw0P2JCRdquuCCsiAHgKYDJ',
+      annual: 'price_1Sw0PEJCRdquuCCs45itMDdm',
     },
     features: {
       adSpendLimit: 500000,

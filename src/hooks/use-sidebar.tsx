@@ -11,16 +11,17 @@ import {
 
 // ===========================================
 // PIXLY - Sidebar State Management
-// Collapsible sidebar with localStorage persistence
+// Persistent collapse + mobile drawer
 // ===========================================
 
 interface SidebarContextValue {
   isCollapsed: boolean;
-  isHovered: boolean;
+  isMobileOpen: boolean;
   toggle: () => void;
   collapse: () => void;
   expand: () => void;
-  setHovered: (hovered: boolean) => void;
+  openMobile: () => void;
+  closeMobile: () => void;
 }
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
@@ -29,10 +30,9 @@ const STORAGE_KEY = 'pixly-sidebar-collapsed';
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  // Restore state from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored !== null) {
@@ -41,12 +41,23 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     setMounted(true);
   }, []);
 
-  // Persist state to localStorage
   useEffect(() => {
     if (mounted) {
       localStorage.setItem(STORAGE_KEY, String(isCollapsed));
     }
   }, [isCollapsed, mounted]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileOpen]);
 
   const toggle = useCallback(() => {
     setIsCollapsed((prev) => !prev);
@@ -60,19 +71,24 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     setIsCollapsed(false);
   }, []);
 
-  const handleSetHovered = useCallback((hovered: boolean) => {
-    setIsHovered(hovered);
+  const openMobile = useCallback(() => {
+    setIsMobileOpen(true);
+  }, []);
+
+  const closeMobile = useCallback(() => {
+    setIsMobileOpen(false);
   }, []);
 
   return (
     <SidebarContext.Provider
       value={{
         isCollapsed,
-        isHovered,
+        isMobileOpen,
         toggle,
         collapse,
         expand,
-        setHovered: handleSetHovered,
+        openMobile,
+        closeMobile,
       }}
     >
       {children}

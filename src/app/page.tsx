@@ -1,931 +1,909 @@
 'use client';
 
 import Link from 'next/link';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef, useState } from 'react';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
 import {
   ArrowRight,
   Check,
-  BarChart3,
+  Target,
   Zap,
   Shield,
   Globe,
-  TrendingUp,
-  Target,
   LineChart,
-  MousePointerClick,
-  Users,
   Star,
   Play,
   ChevronRight,
-  Sparkles,
-  Clock,
-  BadgeCheck,
-  ArrowUpRight,
-  Menu,
-  X,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Logo, LogoIcon } from '@/components/ui/logo';
-import {
-  AnimatedSection,
-  StaggerChildren,
-  StaggerItem,
-  Floating,
-  Magnetic,
-  Parallax,
-} from '@/components/landing/animations';
-import { FounderSection } from '@/components/landing/founder-section';
 import { InfiniteLogos } from '@/components/landing/infinite-logos';
 
 // ===========================================
-// PIXLY - Landing Page Premium
+// CONTENT - Source unique de vérité
 // ===========================================
 
-const features = [
-  {
-    icon: Target,
-    title: 'Attribution Multi-Touch',
-    description:
-      'Comprenez le parcours complet de vos clients avec 5 modèles d\'attribution différents.',
-    gradient: 'from-emerald-500 to-teal-500',
+const CONTENT = {
+  nav: {
+    links: ['Fonctionnalités', 'Témoignages', 'Tarifs'],
+    cta: 'Commencer',
   },
-  {
-    icon: Zap,
-    title: 'Tracking Temps Réel',
-    description:
-      'Visualisez vos conversions instantanément grâce au tracking server-side qui contourne les bloqueurs.',
-    gradient: 'from-green-500 to-emerald-500',
-  },
-  {
-    icon: Shield,
-    title: 'Conforme RGPD',
-    description:
-      'Collecte first-party qui respecte la vie privée et fonctionne avec iOS 14+.',
-    gradient: 'from-teal-500 to-cyan-500',
-  },
-  {
-    icon: Globe,
-    title: 'Toutes Plateformes',
-    description:
-      'Meta, Google Ads, TikTok et plus encore depuis un tableau de bord unique.',
-    gradient: 'from-cyan-500 to-blue-500',
-  },
-  {
-    icon: LineChart,
-    title: 'Analytics Avancés',
-    description:
-      'Rapports détaillés et insights exploitables pour optimiser vos campagnes.',
-    gradient: 'from-blue-500 to-indigo-500',
-  },
-  {
-    icon: MousePointerClick,
-    title: 'Click IDs Automatiques',
-    description:
-      'Capture automatique des fbclid, gclid et tous les paramètres UTM.',
-    gradient: 'from-indigo-500 to-purple-500',
-  },
-];
 
-const metrics = [
-  { value: '95%+', label: 'Précision', description: 'Tracking des conversions' },
-  { value: '10x', label: 'Plus Rapide', description: 'Que le reporting manuel' },
-  { value: '40%', label: 'ROI Moyen', description: 'Amélioration constatée' },
-  { value: '<5min', label: 'Installation', description: 'Setup complet' },
-];
+  hero: {
+    badge: 'Nouveau : Synchronisation Google Ads en temps réel',
+    title: 'Mesurez chaque euro investi en publicité',
+    subtitle: 'Pixly connecte vos plateformes publicitaires à vos ventes réelles pour une attribution précise, même avec iOS 14+.',
+    primaryCta: 'Démarrer gratuitement',
+    secondaryCta: 'Voir la démo',
+    trust: ['Sans carte bancaire', '14 jours d\'essai'],
+  },
 
-const steps = [
-  {
-    number: '01',
-    title: 'Installez le Pixel',
-    description: 'Copiez une seule ligne de code sur votre site. Compatible avec Shopify, WordPress, et tous les CMS.',
-  },
-  {
-    number: '02',
-    title: 'Connectez vos Plateformes',
-    description: 'Liez Meta, Google Ads et vos autres sources en quelques clics via OAuth sécurisé.',
-  },
-  {
-    number: '03',
-    title: 'Analysez et Optimisez',
-    description: 'Visualisez vos vrais ROAS et prenez des décisions basées sur des données fiables.',
-  },
-];
-
-const testimonials = [
-  {
-    quote: "Pixly nous a permis d'identifier que 60% de nos conversions venaient d'un canal qu'on sous-estimait. Notre ROAS a augmenté de 47% en 2 mois.",
-    author: 'Marie Dupont',
-    role: 'CMO',
-    company: 'Maison Élégance',
-    avatar: 'MD',
-    metric: { value: '+47%', label: 'ROAS' },
-    verified: true,
-  },
-  {
-    quote: "Enfin une solution qui fonctionne vraiment avec iOS 14+. Les données sont enfin fiables et je peux prendre des décisions éclairées.",
-    author: 'Thomas Martin',
-    role: 'Growth Manager',
-    company: 'CloudFlow SaaS',
-    avatar: 'TM',
-    metric: { value: '95%', label: 'Précision' },
-    verified: true,
-  },
-  {
-    quote: "L'installation a pris 3 minutes. Le support est réactif et la plateforme est intuitive. Je recommande à 100%.",
-    author: 'Sophie Bernard',
-    role: 'Founder & CEO',
-    company: 'NaturaCare',
-    avatar: 'SB',
-    metric: { value: '3min', label: 'Setup' },
-    verified: true,
-  },
-];
-
-const pricing = [
-  {
-    name: 'Starter',
-    price: 49,
-    description: 'Idéal pour les petites entreprises',
-    features: [
-      'Jusqu\'à 25k€ de dépenses pub/mois',
-      'Meta + Google tracking',
-      'Attribution basique',
-      'Support email',
-      '1 workspace',
+  features: {
+    label: 'Fonctionnalités',
+    title: 'Tout ce qu\'il faut pour maîtriser votre ROI',
+    items: [
+      {
+        number: '01',
+        title: 'Attribution Multi-Touch',
+        subtitle: 'Comprenez enfin le vrai parcours de vos clients',
+        description: 'Fini de créditer uniquement le dernier clic. Pixly analyse chaque point de contact et vous montre exactement quelles campagnes contribuent réellement à vos ventes.',
+        benefits: ['5 modèles d\'attribution', 'Vue complète du parcours', 'Données fiables post-iOS 14'],
+        image: '/l1.jpg',
+      },
+      {
+        number: '02',
+        title: 'Tracking Server-Side',
+        subtitle: 'Récupérez jusqu\'à 40% de conversions perdues',
+        description: 'Les bloqueurs de publicités et les restrictions iOS font perdre des données précieuses. Notre pixel server-side contourne ces limitations et capture chaque conversion.',
+        benefits: ['Contourne les ad-blockers', 'Compatible iOS 14.5+', 'Données en temps réel'],
+        image: '/l2.jpg',
+      },
+      {
+        number: '03',
+        title: 'Toutes vos Sources Réunies',
+        subtitle: 'Un tableau de bord unique pour toutes vos plateformes',
+        description: 'Meta Ads, Google Ads, TikTok, Snapchat... Connectez toutes vos sources publicitaires en quelques clics et comparez leurs performances côte à côte.',
+        benefits: ['Meta, Google, TikTok, Snapchat', 'Connexion OAuth sécurisée', 'Synchronisation automatique'],
+        image: '/l3.jpg',
+      },
+      {
+        number: '04',
+        title: 'Analytics Avancés',
+        subtitle: 'Des insights exploitables, pas juste des graphiques',
+        description: 'Allez au-delà des métriques basiques. Identifiez vos audiences les plus rentables, vos créatives gagnantes et les moments optimaux pour vos campagnes.',
+        benefits: ['Segmentation par audience', 'Analyse des créatives', 'Recommandations automatiques'],
+        image: '/l4.jpg',
+      },
+      {
+        number: '05',
+        title: 'Capture Click IDs',
+        subtitle: 'Ne perdez plus aucune donnée d\'attribution',
+        description: 'Pixly capture automatiquement tous les identifiants de clics (fbclid, gclid, ttclid) et paramètres UTM dès l\'arrivée du visiteur.',
+        benefits: ['fbclid, gclid, ttclid capturés', 'Tous les UTM enregistrés', 'Persistance first-party'],
+        image: '/l5.jpg',
+      },
     ],
   },
-  {
-    name: 'Growth',
-    price: 99,
-    description: 'Pour les marques en croissance',
-    features: [
-      'Jusqu\'à 100k€ de dépenses pub/mois',
-      'Toutes les plateformes',
-      'Attribution multi-touch',
-      'Synchronisation conversions',
-      'Support prioritaire',
-      '3 workspaces',
-    ],
-    popular: true,
-  },
-  {
-    name: 'Scale',
-    price: 199,
-    description: 'Pour les gros annonceurs',
-    features: [
-      'Jusqu\'à 500k€ de dépenses pub/mois',
-      'Intégrations personnalisées',
-      'Analytics avancés',
-      'Accès API complet',
-      'CSM dédié',
-      'Workspaces illimités',
-    ],
-  },
-];
 
-const logos = [
-  'Shopify', 'WooCommerce', 'Stripe', 'Meta', 'Google', 'TikTok'
-];
+  testimonials: {
+    label: 'Témoignages',
+    title: 'Ils optimisent leur acquisition avec Pixly',
+    items: [
+      {
+        quote: 'Nous avons découvert que 40% de nos conversions venaient d\'un canal que nous sous-investissions. Notre ROAS a augmenté de 47% en deux mois.',
+        author: 'Marie Dupont',
+        role: 'Directrice Marketing',
+        company: 'Maison Élégance',
+        metric: '+47%',
+        metricLabel: 'ROAS',
+        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        quote: 'Enfin des données fiables post-iOS 14. Je peux maintenant justifier chaque euro dépensé auprès de ma direction.',
+        author: 'Thomas Martin',
+        role: 'Growth Manager',
+        company: 'CloudFlow',
+        metric: '95%',
+        metricLabel: 'Précision',
+        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+      },
+      {
+        quote: 'Installation en 5 minutes, support ultra-réactif. Pixly est devenu indispensable pour piloter nos campagnes.',
+        author: 'Sophie Bernard',
+        role: 'CEO & Fondatrice',
+        company: 'NaturaCare',
+        metric: '5 min',
+        metricLabel: 'Setup',
+        image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face',
+      },
+    ],
+  },
 
-export default function LandingPage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ['start start', 'end start'],
-  });
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.95]);
+  pricing: {
+    label: 'Tarification',
+    title: 'Un plan adapté à votre croissance',
+    subtitle: 'Tous les plans incluent 14 jours d\'essai gratuit. Sans engagement.',
+    plans: [
+      {
+        name: 'Starter',
+        price: '49',
+        description: 'Pour les entrepreneurs et petites équipes',
+        features: [
+          'Jusqu\'à 25k€ de dépenses/mois',
+          'Meta + Google Ads',
+          'Attribution last-click',
+          'Support par email',
+        ],
+      },
+      {
+        name: 'Growth',
+        price: '99',
+        description: 'Pour les équipes marketing en croissance',
+        features: [
+          'Jusqu\'à 100k€ de dépenses/mois',
+          'Toutes les plateformes',
+          'Attribution multi-touch',
+          'Sync API Conversions',
+          'Support prioritaire',
+        ],
+        popular: true,
+      },
+      {
+        name: 'Scale',
+        price: '199',
+        description: 'Pour les annonceurs avancés',
+        features: [
+          'Dépenses illimitées',
+          'Intégrations sur mesure',
+          'Analytics avancés + API',
+          'Account manager dédié',
+        ],
+      },
+    ],
+  },
+
+  founder: {
+    quote: 'Pixly n\'est pas simplement un outil de tracking. C\'est la fin des décisions marketing à l\'aveugle — chaque euro investi trouve enfin sa vraie valeur.',
+    name: 'Alexandre Dupont',
+    role: 'Cofounder of Pixly',
+    image: '/CEO.png',
+  },
+
+  cta: {
+    title: 'Prêt à découvrir votre vrai ROAS ?',
+    subtitle: 'Rejoignez plus de 500 entreprises qui optimisent leurs campagnes avec Pixly.',
+    primaryCta: 'Commencer l\'essai gratuit',
+    secondaryCta: 'Contacter l\'équipe',
+  },
+
+  footer: {
+    description: 'La solution d\'attribution marketing conçue pour les équipes ambitieuses.',
+    links: {
+      product: ['Fonctionnalités', 'Tarifs', 'Intégrations', 'Changelog'],
+      resources: ['Documentation', 'Blog', 'Support', 'Status'],
+      legal: ['Confidentialité', 'CGU', 'Cookies'],
+    },
+  },
+};
+
+// ===========================================
+// COMPONENTS
+// ===========================================
+
+function Navigation() {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 10);
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
+  // Close on Escape key
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth >= 768) setMobileOpen(false);
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const closeMobile = () => setMobileOpen(false);
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      {/* Navigation */}
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed top-0 z-50 w-full"
+    <nav className="fixed top-0 z-50 w-full pointer-events-none">
+      {/* ========== Mobile Full-Screen Overlay ========== */}
+      <div
+        className={`
+          md:hidden fixed inset-0
+          transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+          ${mobileOpen ? 'pointer-events-auto' : 'pointer-events-none'}
+        `}
+        aria-hidden={!mobileOpen}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mt-4 flex h-16 items-center justify-between rounded-2xl border border-neutral-200/50 bg-white/80 px-6 shadow-soft backdrop-blur-xl">
-            {/* Logo - Left */}
-            <Logo href="/" size="sm" />
+        {/* Frosted backdrop */}
+        <div
+          className={`
+            absolute inset-0 bg-white/[0.98] backdrop-blur-2xl
+            transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+            ${mobileOpen ? 'opacity-100' : 'opacity-0'}
+          `}
+        />
 
-            {/* Navigation Links - Center */}
-            <div className="hidden items-center gap-8 md:flex absolute left-1/2 -translate-x-1/2">
-              <Link href="#demo" className="relative text-sm font-medium text-neutral-600 transition-colors hover:text-primary-600 group">
-                Demo
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full" />
+        {/* Menu content */}
+        <div className="relative h-full flex flex-col justify-between pt-24 pb-10">
+          {/* Navigation links */}
+          <div className="px-6 flex flex-col gap-1">
+            {CONTENT.nav.links.map((link, i) => (
+              <Link
+                key={link}
+                href={`#${link.toLowerCase()}`}
+                className="group flex items-center justify-between px-5 py-4 rounded-2xl text-[17px] font-medium text-neutral-800 hover:text-primary-700 hover:bg-primary-50/60 active:bg-primary-100/60 transition-colors duration-200"
+                onClick={closeMobile}
+                tabIndex={mobileOpen ? 0 : -1}
+                style={{
+                  opacity: mobileOpen ? 1 : 0,
+                  transform: mobileOpen ? 'translateX(0)' : 'translateX(-16px)',
+                  transition: `opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${mobileOpen ? (i + 1) * 60 : 0}ms, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${mobileOpen ? (i + 1) * 60 : 0}ms, background-color 0.2s, color 0.2s`,
+                }}
+              >
+                <span>{link}</span>
+                <ChevronRight className="h-4 w-4 text-neutral-300 group-hover:text-primary-400 transition-colors duration-200" />
               </Link>
-              <Link href="#features" className="relative text-sm font-medium text-neutral-600 transition-colors hover:text-primary-600 group">
-                Fonctionnalités
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-              <Link href="#testimonials" className="relative text-sm font-medium text-neutral-600 transition-colors hover:text-primary-600 group">
-                Témoignages
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-              <Link href="#pricing" className="relative text-sm font-medium text-neutral-600 transition-colors hover:text-primary-600 group">
-                Tarifs
-                <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-primary-500 transition-all duration-300 group-hover:w-full" />
-              </Link>
-            </div>
+            ))}
+          </div>
 
-            {/* Auth Buttons - Right */}
-            <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-              <Link href="/login">
-                <Button variant="ghost" size="sm" className="text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100">
-                  Connexion
-                </Button>
-              </Link>
-              <Link href="/signup">
-                <Button size="sm" className="shadow-md shadow-primary-500/20 transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/30">
-                  Commencer
-                  <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Button>
-              </Link>
-            </div>
-
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-neutral-100 transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          {/* Bottom CTA section */}
+          <div
+            className="px-6 flex flex-col gap-3"
+            style={{
+              opacity: mobileOpen ? 1 : 0,
+              transform: mobileOpen ? 'translateY(0)' : 'translateY(12px)',
+              transition: `all 0.5s cubic-bezier(0.16, 1, 0.3, 1) ${mobileOpen ? 250 : 0}ms`,
+            }}
+          >
+            <div className="h-px bg-neutral-100 mb-2" />
+            <Link
+              href="/login"
+              className="px-6 py-3.5 text-center font-medium text-neutral-700 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200/80 rounded-2xl transition-colors duration-200"
+              onClick={closeMobile}
+              tabIndex={mobileOpen ? 0 : -1}
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              Connexion
+            </Link>
+            <Link
+              href="/login"
+              className="px-6 py-4 text-center font-semibold text-white bg-primary-600 hover:bg-primary-700 rounded-2xl shadow-lg shadow-primary-600/25 hover:shadow-xl hover:shadow-primary-600/30 transition-all duration-200 flex items-center justify-center gap-2"
+              onClick={closeMobile}
+              tabIndex={mobileOpen ? 0 : -1}
+            >
+              {CONTENT.nav.cta}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* ========== Top Navigation Bar ========== */}
+      <div className="container-main py-3 sm:py-4 relative z-10">
+        {/* Navbar Container - GPU-accelerated transforms */}
+        <div
+          className="pointer-events-auto will-change-transform"
+          style={{
+            transform: scrolled ? 'translateY(0)' : 'translateY(0)',
+            transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+          }}
+        >
+          <div
+            className={`
+              relative flex h-14 sm:h-16 items-center justify-between
+              transition-all duration-[400ms] ease-[cubic-bezier(0.16,1,0.3,1)]
+              ${scrolled
+                ? 'px-4 sm:px-6 bg-white/80 backdrop-blur-2xl rounded-2xl border border-neutral-200/80 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.1),0_0_0_1px_rgba(255,255,255,0.8)_inset]'
+                : 'px-2 sm:px-4 bg-transparent rounded-none border-transparent shadow-none'
+              }
+            `}
+          >
+            {/* Logo */}
+            <div className="flex-shrink-0 z-10">
+              <Logo href="/" size="sm" />
+            </div>
+
+            {/* Desktop Navigation - Center */}
+            <div className="hidden lg:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+              <div className={`
+                flex items-center gap-1 px-1.5 py-1.5 rounded-xl
+                transition-all duration-300
+                ${scrolled ? 'bg-neutral-100/60' : 'bg-white/60 backdrop-blur-sm'}
+              `}>
+                {CONTENT.nav.links.map((link) => (
+                  <Link
+                    key={link}
+                    href={`#${link.toLowerCase()}`}
+                    className={`
+                      px-4 py-2 text-sm font-medium rounded-lg
+                      transition-all duration-200
+                      ${scrolled
+                        ? 'text-neutral-600 hover:text-neutral-900 hover:bg-white'
+                        : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/80'
+                      }
+                    `}
+                  >
+                    {link}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Desktop CTA - Right */}
+            <div className="hidden md:flex items-center gap-4 z-10">
+              <Link
+                href="/login"
+                className={`
+                  px-4 py-2.5 text-sm font-medium rounded-xl
+                  transition-all duration-200
+                  ${scrolled
+                    ? 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100'
+                    : 'text-neutral-700 hover:text-neutral-900 hover:bg-white/60'
+                  }
+                `}
+              >
+                Connexion
+              </Link>
+              <Link
+                href="/login"
+                className={`
+                  inline-flex items-center justify-center
+                  px-5 sm:px-6 py-2.5 sm:py-3
+                  text-sm font-semibold text-white
+                  bg-primary-600 hover:bg-primary-700
+                  rounded-xl
+                  shadow-lg shadow-primary-600/25
+                  hover:shadow-xl hover:shadow-primary-600/30
+                  transform hover:scale-[1.02] active:scale-[0.98]
+                  transition-all duration-200
+                `}
+              >
+                {CONTENT.nav.cta}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button - Animated Hamburger */}
+            <button
+              className={`
+                md:hidden relative w-10 h-10 flex items-center justify-center rounded-xl z-10
+                transition-all duration-200
+                ${mobileOpen
+                  ? 'text-neutral-900'
+                  : scrolled
+                    ? 'hover:bg-neutral-100 text-neutral-700'
+                    : 'hover:bg-white/60 text-neutral-700'
+                }
+              `}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              aria-expanded={mobileOpen}
+            >
+              <div className="w-[18px] flex flex-col gap-[5px]">
+                <span
+                  className={`block h-[1.5px] w-full rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+                    mobileOpen ? 'translate-y-[6.5px] rotate-45' : ''
+                  }`}
+                />
+                <span
+                  className={`block h-[1.5px] w-full rounded-full bg-current transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    mobileOpen ? 'opacity-0 scale-x-0' : ''
+                  }`}
+                />
+                <span
+                  className={`block h-[1.5px] w-full rounded-full bg-current transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] origin-center ${
+                    mobileOpen ? '-translate-y-[6.5px] -rotate-45' : ''
+                  }`}
+                />
+              </div>
             </button>
           </div>
         </div>
+      </div>
+    </nav>
+  );
+}
 
-        {/* Mobile menu */}
-        <motion.div
-          initial={false}
-          animate={{ height: mobileMenuOpen ? 'auto' : 0, opacity: mobileMenuOpen ? 1 : 0 }}
-          className="md:hidden overflow-hidden bg-white/95 backdrop-blur-xl mx-4 mt-2 rounded-2xl border border-neutral-200/50"
-        >
-          <div className="p-4 space-y-3">
-            <Link href="#demo" className="block py-2 px-4 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-              Demo
-            </Link>
-            <Link href="#features" className="block py-2 px-4 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-              Fonctionnalités
-            </Link>
-            <Link href="#testimonials" className="block py-2 px-4 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-              Témoignages
-            </Link>
-            <Link href="#pricing" className="block py-2 px-4 text-sm font-medium text-neutral-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors">
-              Tarifs
-            </Link>
-            <div className="pt-3 border-t border-neutral-200/50 space-y-2">
-              <Link href="/login" className="block">
-                <Button variant="outline" className="w-full">Connexion</Button>
-              </Link>
-              <Link href="/signup" className="block">
-                <Button className="w-full">Commencer gratuitement</Button>
-              </Link>
-            </div>
+function Hero() {
+  return (
+    <section className="relative pt-28 pb-16 sm:pt-40 sm:pb-32 gradient-hero overflow-hidden">
+      <div className="container-main">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="badge badge-primary mb-5 sm:mb-6 text-xs sm:text-sm">
+            <Zap className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+            {CONTENT.hero.badge}
           </div>
-        </motion.div>
-      </motion.nav>
 
-      {/* Hero Section - 100vh */}
-      <section ref={heroRef} className="relative h-screen flex flex-col overflow-hidden">
-        {/* Background effects */}
-        <div className="absolute inset-0 gradient-hero" />
-        <div className="absolute inset-0 grid-pattern opacity-50" />
+          <h1 className="heading-xl mb-5 sm:mb-6">
+            {CONTENT.hero.title}
+          </h1>
 
-        {/* Floating orbs */}
-        <Floating duration={8} delay={0}>
-          <div className="absolute top-20 left-[10%] h-64 w-64 rounded-full bg-primary-400/10 blur-3xl" />
-        </Floating>
-        <Floating duration={10} delay={2}>
-          <div className="absolute top-40 right-[15%] h-96 w-96 rounded-full bg-primary-300/10 blur-3xl" />
-        </Floating>
-        <Floating duration={7} delay={1}>
-          <div className="absolute bottom-40 left-[20%] h-72 w-72 rounded-full bg-emerald-400/10 blur-3xl" />
-        </Floating>
+          <p className="text-body max-w-2xl mx-auto mb-8 sm:mb-10">
+            {CONTENT.hero.subtitle}
+          </p>
 
-        {/* Main content - flex-1 to take remaining space */}
-        <motion.div
-          style={{ opacity: heroOpacity, scale: heroScale }}
-          className="relative flex-1 flex flex-col justify-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-24"
-        >
-          <div className="text-center">
-            {/* Badge */}
-            <AnimatedSection delay={0.1} immediate>
-              <motion.span
-                whileHover={{ scale: 1.02 }}
-                className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50/80 px-4 py-2 text-sm font-medium text-primary-700 backdrop-blur-sm"
-              >
-                <Sparkles className="h-4 w-4" />
-                Nouveau : Intégration Google Ads disponible
-                <ChevronRight className="h-4 w-4" />
-              </motion.span>
-            </AnimatedSection>
-
-            {/* Heading */}
-            <AnimatedSection delay={0.2} className="mt-6 sm:mt-8" immediate>
-              <h1 className="text-4xl font-bold tracking-tight text-neutral-900 sm:text-6xl lg:text-7xl">
-                L'Attribution Marketing
-                <br />
-                <span className="text-gradient-animated">Qui Fonctionne Vraiment</span>
-              </h1>
-            </AnimatedSection>
-
-            {/* Subheading */}
-            <AnimatedSection delay={0.3} className="mt-6" immediate>
-              <p className="mx-auto max-w-2xl text-base text-neutral-600 sm:text-lg lg:text-xl leading-relaxed">
-                Arrêtez de deviner quelles publicités génèrent des revenus.
-                <br className="hidden sm:block" />
-                Pixly vous donne une attribution précise en temps réel sur tous vos canaux.
-              </p>
-            </AnimatedSection>
-
-            {/* CTAs */}
-            <AnimatedSection delay={0.4} className="mt-8" immediate>
-              <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Magnetic>
-                  <Link href="/signup">
-                    <Button
-                      size="xl"
-                      className="group relative overflow-hidden shadow-lg shadow-primary-500/25 transition-all duration-500 hover:shadow-xl hover:shadow-primary-500/30"
-                    >
-                      <span className="relative z-10 flex items-center">
-                        Démarrer l'essai gratuit
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                      </span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-500 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    </Button>
-                  </Link>
-                </Magnetic>
-                <Link href="#demo">
-                  <Button
-                    variant="outline"
-                    size="xl"
-                    className="group border-neutral-300 hover:border-primary-300 hover:bg-primary-50/50"
-                  >
-                    <Play className="mr-2 h-5 w-5 text-primary-600" />
-                    Voir la démo
-                  </Button>
-                </Link>
-              </div>
-              <p className="mt-5 flex items-center justify-center gap-4 text-sm text-neutral-500">
-                <span className="flex items-center gap-1.5">
-                  <BadgeCheck className="h-4 w-4 text-primary-500" />
-                  Sans carte bancaire
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 text-primary-500" />
-                  14 jours d'essai
-                </span>
-              </p>
-            </AnimatedSection>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8">
+            <Link href="/login" className="btn btn-primary btn-xl w-full sm:w-auto">
+              {CONTENT.hero.primaryCta}
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link href="#demo" className="btn btn-outline btn-xl w-full sm:w-auto">
+              <Play className="mr-2 h-5 w-5" />
+              {CONTENT.hero.secondaryCta}
+            </Link>
           </div>
-        </motion.div>
 
-        {/* Infinite Logos Carousel - at bottom of hero */}
-        <div className="relative z-10 pb-8">
-          <AnimatedSection delay={0.5} immediate>
-            <p className="text-center text-sm font-medium text-neutral-500 mb-6">
-              Compatible avec vos outils préférés
-            </p>
-          </AnimatedSection>
-          <InfiniteLogos speed={35} className="py-4" />
-        </div>
-      </section>
-
-      {/* Dashboard Preview Section */}
-      <section id="demo" className="relative py-20 sm:py-28 bg-gradient-to-b from-white to-neutral-50/50 overflow-hidden">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <AnimatedSection className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700">
-              <BarChart3 className="h-4 w-4" />
-              Aperçu
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-neutral-900 sm:text-4xl">
-              Un tableau de bord <span className="text-gradient">puissant et intuitif</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg text-neutral-600">
-              Visualisez toutes vos métriques clés en un coup d'œil et prenez des décisions éclairées.
-            </p>
-          </AnimatedSection>
-
-          <AnimatedSection direction="scale">
-            <div className="relative">
-              {/* Glow effect behind */}
-              <div className="absolute -inset-4 rounded-3xl bg-gradient-to-r from-primary-500/15 via-emerald-500/15 to-teal-500/15 blur-2xl" />
-
-              <motion.div
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.4 }}
-                className="relative rounded-2xl border border-neutral-200/80 bg-white p-2 shadow-strong sm:rounded-3xl sm:p-3"
-              >
-                <div className="overflow-hidden rounded-xl bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900 sm:rounded-2xl">
-                  {/* Mock Dashboard */}
-                  <div className="p-4 sm:p-8">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div className="flex items-center gap-3">
-                        <LogoIcon size="xs" />
-                        <span className="text-white font-semibold">Tableau de bord</span>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="h-3 w-3 rounded-full bg-red-500" />
-                        <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                        <div className="h-3 w-3 rounded-full bg-green-500" />
-                      </div>
-                    </div>
-
-                    {/* Stats cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                      {[
-                        { label: 'Revenus', value: '€127,493', change: '+23%' },
-                        { label: 'ROAS', value: '4.2x', change: '+18%' },
-                        { label: 'Conversions', value: '1,847', change: '+31%' },
-                        { label: 'CPA', value: '€24.50', change: '-12%' },
-                      ].map((stat, i) => (
-                        <motion.div
-                          key={stat.label}
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.1 }}
-                          viewport={{ once: true }}
-                          className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-3 sm:p-4"
-                        >
-                          <p className="text-xs text-neutral-400">{stat.label}</p>
-                          <p className="text-lg sm:text-2xl font-bold text-white mt-1">{stat.value}</p>
-                          <span className={`text-xs ${stat.change.startsWith('+') ? 'text-green-400' : 'text-red-400'}`}>
-                            {stat.change}
-                          </span>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    {/* Chart placeholder */}
-                    <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 sm:p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-sm text-neutral-300">Attribution par canal</span>
-                        <span className="text-xs text-neutral-500">7 derniers jours</span>
-                      </div>
-                      <div className="flex items-end gap-2 h-32 sm:h-40">
-                        {[65, 45, 80, 55, 70, 90, 75].map((height, i) => (
-                          <motion.div
-                            key={i}
-                            initial={{ height: 0 }}
-                            whileInView={{ height: `${height}%` }}
-                            transition={{ delay: i * 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                            viewport={{ once: true }}
-                            className="flex-1 rounded-t-md bg-gradient-to-t from-primary-600 to-primary-400"
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Metrics Section */}
-      <section className="py-20 sm:py-32">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <StaggerChildren className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-            {metrics.map((metric) => (
-              <StaggerItem key={metric.label}>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  className="text-center"
-                >
-                  <p className="text-4xl sm:text-5xl font-bold text-gradient">{metric.value}</p>
-                  <p className="mt-2 text-lg font-semibold text-neutral-900">{metric.label}</p>
-                  <p className="text-sm text-neutral-500">{metric.description}</p>
-                </motion.div>
-              </StaggerItem>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-small">
+            {CONTENT.hero.trust.map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <Check className="h-4 w-4 text-primary-500 flex-shrink-0" />
+                {item}
+              </span>
             ))}
-          </StaggerChildren>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Features Section */}
-      <section id="features" className="relative py-20 sm:py-32 bg-white overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-60" />
+function LogoCloud() {
+  return (
+    <section className="py-12 border-y border-neutral-200 bg-neutral-50">
+      <div className="container-main mb-6">
+        <p className="text-center text-small">
+          Compatible avec vos outils marketing
+        </p>
+      </div>
+      <InfiniteLogos speed={35} />
+    </section>
+  );
+}
 
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700">
-              <Zap className="h-4 w-4" />
-              Fonctionnalités
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-neutral-900 sm:text-5xl">
-              Tout ce qu'il faut pour tracker
-              <br />
-              <span className="text-gradient">votre ROI publicitaire</span>
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600">
-              Des fonctionnalités puissantes conçues pour vous donner une visibilité complète
-              sur vos performances marketing.
-            </p>
-          </AnimatedSection>
+function Features() {
+  return (
+    <section id="fonctionnalités" className="section gradient-section">
+      <div className="container-main">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <span className="label">{CONTENT.features.label}</span>
+          <h2 className="heading-lg mt-3 sm:mt-4">{CONTENT.features.title}</h2>
+        </div>
 
-          <StaggerChildren className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <StaggerItem key={feature.title}>
-                <motion.div
-                  whileHover={{ y: -6 }}
-                  transition={{ duration: 0.3 }}
-                  className="group relative h-full rounded-2xl border border-neutral-200 bg-white p-8 shadow-soft transition-all duration-300 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-500/10"
-                >
-                  <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${feature.gradient} text-white shadow-md transition-transform duration-300 group-hover:scale-105`}>
-                    <feature.icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold text-neutral-900">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-neutral-600 leading-relaxed text-sm">
+        <div className="space-y-16 sm:space-y-24 lg:space-y-32">
+          {CONTENT.features.items.map((feature, index) => {
+            const isEven = index % 2 === 1;
+
+            return (
+              <div
+                key={feature.number}
+                className={`flex flex-col ${isEven ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-8 sm:gap-12 lg:gap-20`}
+              >
+                {/* Text Content */}
+                <div className="flex-1 max-w-xl">
+                  <span className="text-5xl sm:text-6xl md:text-7xl font-serif text-primary-200 font-bold">
+                    {feature.number}
+                  </span>
+
+                  <h3 className="heading-lg mt-3 sm:mt-4 mb-2">{feature.title}</h3>
+
+                  <p className="text-base sm:text-lg text-primary-600 font-medium mb-3 sm:mb-4">
+                    {feature.subtitle}
+                  </p>
+
+                  <p className="text-body mb-5 sm:mb-6">
                     {feature.description}
                   </p>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
-        </div>
-      </section>
 
-      {/* How it works */}
-      <section id="how-it-works" className="relative py-20 sm:py-32 bg-gradient-to-b from-neutral-50 to-white overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 grid-pattern opacity-40" />
-        <Floating duration={10}>
-          <div className="absolute top-20 right-[10%] h-96 w-96 rounded-full bg-primary-400/10 blur-3xl" />
-        </Floating>
-        <Floating duration={8} delay={1}>
-          <div className="absolute bottom-20 left-[5%] h-64 w-64 rounded-full bg-emerald-400/10 blur-3xl" />
-        </Floating>
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700">
-              <Target className="h-4 w-4" />
-              Simple et rapide
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-neutral-900 sm:text-5xl">
-              Opérationnel en 3 étapes
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600">
-              Installez Pixly en moins de 5 minutes et commencez à tracker vos conversions avec précision.
-            </p>
-          </AnimatedSection>
-
-          <StaggerChildren className="mt-16 grid grid-cols-1 gap-8 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <StaggerItem key={step.number}>
-                <motion.div
-                  whileHover={{ y: -5 }}
-                  className="relative"
-                >
-                  {/* Connector line */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-12 left-full w-full h-px bg-gradient-to-r from-primary-300 to-transparent z-10" />
-                  )}
-
-                  <div className="relative rounded-2xl border border-neutral-200 bg-white p-8 shadow-soft transition-all duration-300 hover:border-primary-200 hover:shadow-xl hover:shadow-primary-500/10">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-500/25">
-                      <span className="text-xl font-bold">{step.number}</span>
-                    </div>
-                    <h3 className="mt-5 text-xl font-semibold text-neutral-900">{step.title}</h3>
-                    <p className="mt-3 text-neutral-600 leading-relaxed">{step.description}</p>
-                  </div>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
-
-          <AnimatedSection delay={0.4} className="mt-12 text-center">
-            <Link href="/signup">
-              <Button size="lg" className="shadow-lg shadow-primary-500/25">
-                Commencer maintenant
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section id="testimonials" className="py-20 sm:py-32 bg-neutral-50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-white px-4 py-1.5 text-sm font-medium text-primary-700">
-              <Users className="h-4 w-4" />
-              Témoignages
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-neutral-900 sm:text-5xl">
-              Ils ont transformé leurs résultats
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600">
-              Découvrez comment des entreprises comme la vôtre utilisent Pixly pour optimiser leurs investissements publicitaires.
-            </p>
-          </AnimatedSection>
-
-          <StaggerChildren className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {testimonials.map((testimonial) => (
-              <StaggerItem key={testimonial.author}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  transition={{ duration: 0.3 }}
-                  className="relative h-full rounded-2xl border border-neutral-200 bg-white p-6 shadow-soft transition-all duration-300 hover:shadow-lg"
-                >
-                  {/* Metric Badge */}
-                  <div className="absolute -top-3 right-6">
-                    <div className="inline-flex items-center gap-1.5 rounded-full bg-primary-500 px-3 py-1 text-white shadow-md shadow-primary-500/20">
-                      <span className="text-sm font-semibold">{testimonial.metric.value}</span>
-                      <span className="text-xs opacity-90">{testimonial.metric.label}</span>
-                    </div>
-                  </div>
-
-                  {/* Stars */}
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-
-                  <blockquote className="text-neutral-700 leading-relaxed text-sm">
-                    "{testimonial.quote}"
-                  </blockquote>
-
-                  <div className="mt-6 flex items-center gap-3 pt-4 border-t border-neutral-100">
-                    <div className="relative">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary-500 to-primary-600 text-white font-semibold text-xs shadow-sm">
-                        {testimonial.avatar}
-                      </div>
-                      {testimonial.verified && (
-                        <div className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-white shadow-sm">
-                          <BadgeCheck className="h-3 w-3 text-primary-500" />
+                  <ul className="space-y-3">
+                    {feature.benefits.map((benefit) => (
+                      <li key={benefit} className="flex items-center gap-3">
+                        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center">
+                          <Check className="w-3 h-3 text-primary-600" />
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-neutral-900 text-sm">{testimonial.author}</p>
-                      <p className="text-xs text-neutral-500">
-                        {testimonial.role} · {testimonial.company}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
-
-          {/* Trust indicators */}
-          <AnimatedSection delay={0.3} className="mt-12 text-center">
-            <div className="inline-flex flex-wrap items-center justify-center gap-8 rounded-full border border-neutral-200 bg-white px-8 py-4 shadow-soft">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-1.5">
-                  {['MD', 'TM', 'SB'].map((initials) => (
-                    <div
-                      key={initials}
-                      className="flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-primary-400 to-primary-600 text-[10px] font-medium text-white"
-                    >
-                      {initials}
-                    </div>
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-neutral-700">+500 clients actifs</span>
-              </div>
-              <div className="h-4 w-px bg-neutral-200" />
-              <div className="flex items-center gap-2">
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <span className="text-sm font-medium text-neutral-700">4.9/5 satisfaction</span>
-              </div>
-            </div>
-          </AnimatedSection>
-        </div>
-      </section>
-
-      {/* Founder Section */}
-      <FounderSection />
-
-      {/* Pricing */}
-      <section id="pricing" className="relative py-20 sm:py-32 bg-white overflow-hidden">
-        <div className="absolute inset-0 gradient-mesh opacity-40" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection className="text-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700">
-              <Sparkles className="h-4 w-4" />
-              Tarification
-            </span>
-            <h2 className="mt-6 text-3xl font-bold text-neutral-900 sm:text-5xl">
-              Des prix simples et transparents
-            </h2>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600">
-              Choisissez le plan adapté à votre activité. Tous les plans incluent 14 jours d'essai gratuit.
-            </p>
-          </AnimatedSection>
-
-          <StaggerChildren className="mt-16 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-            {pricing.map((plan) => (
-              <StaggerItem key={plan.name}>
-                <motion.div
-                  whileHover={{ y: -4 }}
-                  className={`relative h-full rounded-2xl border bg-white p-6 sm:p-8 transition-all duration-300 ${
-                    plan.popular
-                      ? 'border-primary-300 shadow-xl shadow-primary-500/15 ring-1 ring-primary-200'
-                      : 'border-neutral-200 shadow-soft hover:border-primary-200 hover:shadow-lg'
-                  }`}
-                >
-                  {plan.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary-500 px-4 py-1 text-xs font-semibold text-white shadow-md shadow-primary-500/25">
-                      Recommandé
-                    </span>
-                  )}
-
-                  <h3 className="text-lg font-semibold text-neutral-900">{plan.name}</h3>
-                  <p className="mt-1 text-sm text-neutral-500">{plan.description}</p>
-
-                  <div className="mt-6">
-                    <span className="text-4xl font-bold text-neutral-900">{plan.price}€</span>
-                    <span className="text-neutral-500 text-sm">/mois</span>
-                  </div>
-
-                  <ul className="mt-6 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5 text-sm text-neutral-600">
-                        <Check className="h-4 w-4 flex-shrink-0 text-primary-500 mt-0.5" />
-                        {feature}
+                        <span className="text-neutral-700">{benefit}</span>
                       </li>
                     ))}
                   </ul>
+                </div>
 
-                  <Link href="/signup" className="mt-8 block">
-                    <Button
-                      variant={plan.popular ? 'primary' : 'outline'}
-                      className={`w-full ${plan.popular ? 'shadow-md shadow-primary-500/20' : ''}`}
-                    >
-                      Commencer l'essai
-                      {plan.popular && <ArrowRight className="ml-2 h-4 w-4" />}
-                    </Button>
-                  </Link>
-                </motion.div>
-              </StaggerItem>
-            ))}
-          </StaggerChildren>
+                {/* Image */}
+                <div className="flex-1 w-full">
+                  <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl shadow-neutral-900/10">
+                    <Image
+                      src={feature.image}
+                      alt={feature.title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Final CTA */}
-      <section className="py-20 sm:py-32 bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection>
-            <div className="relative overflow-hidden rounded-3xl border border-neutral-200 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 px-8 py-16 sm:px-16 sm:py-24">
-              {/* Background effects */}
-              <div className="absolute inset-0 grid-pattern opacity-30" />
-              <Floating duration={8}>
-                <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-primary-400/15 blur-3xl" />
-              </Floating>
-              <Floating duration={10} delay={2}>
-                <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-emerald-400/15 blur-3xl" />
-              </Floating>
+function Dashboard() {
+  return (
+    <section id="demo" className="section">
+      <div className="container-main">
+        <div className="text-center mb-8 sm:mb-12">
+          <span className="label">Aperçu</span>
+          <h2 className="heading-lg mt-3 sm:mt-4">Un tableau de bord pensé pour l&apos;action</h2>
+          <p className="text-body mt-3 sm:mt-4 max-w-2xl mx-auto">
+            Visualisez vos performances en temps réel et identifiez vos leviers de croissance.
+          </p>
+        </div>
 
-              <div className="relative text-center">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="inline-flex items-center gap-2 rounded-full border border-primary-200 bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700 mb-6"
-                >
-                  <Sparkles className="h-4 w-4" />
-                  Essai gratuit de 14 jours
-                </motion.div>
-                <motion.h2
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6 }}
-                  className="text-3xl font-bold text-neutral-900 sm:text-5xl"
-                >
-                  Prêt à connaître votre vrai ROAS ?
-                </motion.h2>
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 }}
-                  className="mx-auto mt-6 max-w-xl text-lg text-neutral-600"
-                >
-                  Rejoignez des centaines de marketeurs qui font confiance à Pixly
-                  pour des données d'attribution fiables.
-                </motion.p>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.2 }}
-                  className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
-                >
-                  <Magnetic>
-                    <Link href="/signup">
-                      <Button
-                        size="xl"
-                        className="group shadow-lg shadow-primary-500/25 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/30"
-                      >
-                        Démarrer gratuitement
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                      </Button>
-                    </Link>
-                  </Magnetic>
-                  <Link href="#demo">
-                    <Button
-                      variant="outline"
-                      size="xl"
-                      className="border-neutral-300 text-neutral-700 hover:border-primary-300 hover:bg-primary-50"
-                    >
-                      Parler à un expert
-                    </Button>
-                  </Link>
-                </motion.div>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="mt-6 flex items-center justify-center gap-4 text-sm text-neutral-500"
-                >
-                  <span className="flex items-center gap-1.5">
-                    <BadgeCheck className="h-4 w-4 text-primary-500" />
-                    Sans carte bancaire
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Shield className="h-4 w-4 text-primary-500" />
-                    Données sécurisées
-                  </span>
-                </motion.p>
+        <div className="relative">
+          <div className="absolute -inset-4 bg-gradient-to-r from-primary-500/10 via-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl" />
+
+          <div className="relative card p-2 sm:p-3">
+            <div className="rounded-xl bg-neutral-900 overflow-hidden">
+              <div className="p-4 sm:p-6 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <LogoIcon size="xs" />
+                    <span className="text-white font-medium text-sm">Dashboard</span>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                    <div className="w-3 h-3 rounded-full bg-green-500" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 sm:p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 mb-4 sm:mb-6">
+                  {[
+                    { label: 'Revenus', value: '€127,493', change: '+23%', positive: true },
+                    { label: 'ROAS', value: '4.2x', change: '+18%', positive: true },
+                    { label: 'Conversions', value: '1,847', change: '+31%', positive: true },
+                    { label: 'CPA', value: '€24.50', change: '-12%', positive: true },
+                  ].map((item) => (
+                    <div key={item.label} className="bg-white/5 rounded-xl p-2.5 sm:p-4 border border-white/10">
+                      <p className="text-[11px] sm:text-xs text-neutral-400">{item.label}</p>
+                      <p className="text-lg sm:text-2xl font-bold text-white mt-0.5 sm:mt-1">{item.value}</p>
+                      <p className={`text-[11px] sm:text-xs mt-0.5 sm:mt-1 ${item.positive ? 'text-green-400' : 'text-red-400'}`}>
+                        {item.change}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="bg-white/5 rounded-xl p-4 sm:p-6 border border-white/10">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm text-neutral-300">Attribution par canal</span>
+                    <span className="text-xs text-neutral-500">7 derniers jours</span>
+                  </div>
+                  <div className="flex items-end gap-2 h-32 sm:h-40">
+                    {[65, 45, 80, 55, 70, 90, 75].map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 bg-gradient-to-t from-primary-600 to-primary-400 rounded-t transition-all duration-500"
+                        style={{ height: `${h}%` }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
-          </AnimatedSection>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Footer */}
-      <footer className="border-t border-neutral-200 bg-white py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4 lg:gap-16">
-            {/* Brand */}
-            <div className="col-span-2 md:col-span-1">
-              <Logo href="/" size="sm" />
-              <p className="mt-4 text-sm text-neutral-500 max-w-xs">
-                La solution d'attribution marketing la plus précise pour les e-commerçants et annonceurs.
-              </p>
+function Testimonials() {
+  return (
+    <section id="témoignages" className="section bg-neutral-50">
+      <div className="container-main">
+        <div className="text-center mb-10 sm:mb-16">
+          <span className="label">
+            {CONTENT.testimonials.label}
+          </span>
+          <h2 className="heading-lg mt-3 sm:mt-4">{CONTENT.testimonials.title}</h2>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 sm:gap-6">
+          {CONTENT.testimonials.items.map((item) => (
+            <div
+              key={item.author}
+              className="relative bg-white border border-neutral-200 rounded-2xl p-6 sm:p-8 hover:border-neutral-300 hover:shadow-lg transition-all duration-300"
+            >
+              {/* Metric Badge */}
+              <div className="absolute -top-3 right-6 bg-primary-500 text-white text-sm font-semibold px-3 py-1 rounded-full shadow-lg shadow-primary-500/25">
+                {item.metric} {item.metricLabel}
+              </div>
+
+              {/* Stars */}
+              <div className="flex gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+
+              {/* Quote */}
+              <blockquote className="text-neutral-600 mb-6 leading-relaxed">
+                "{item.quote}"
+              </blockquote>
+
+              {/* Author */}
+              <div className="flex items-center gap-3">
+                <div className="relative w-11 h-11 rounded-full overflow-hidden ring-2 ring-neutral-200">
+                  <Image
+                    src={item.image}
+                    alt={item.author}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div>
+                  <p className="text-neutral-900 font-medium text-sm">{item.author}</p>
+                  <p className="text-neutral-500 text-xs">
+                    {item.role}, {item.company}
+                  </p>
+                </div>
+              </div>
             </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
-            {/* Links */}
-            <div>
-              <h4 className="font-semibold text-neutral-900">Produit</h4>
-              <ul className="mt-4 space-y-3">
-                <li><Link href="#features" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Fonctionnalités</Link></li>
-                <li><Link href="#pricing" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Tarifs</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Intégrations</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Changelog</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-neutral-900">Ressources</h4>
-              <ul className="mt-4 space-y-3">
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Documentation</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Guide d'installation</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Blog</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Support</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-neutral-900">Légal</h4>
-              <ul className="mt-4 space-y-3">
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Confidentialité</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">CGU</Link></li>
-                <li><Link href="#" className="text-sm text-neutral-500 hover:text-primary-600 transition-colors">Cookies</Link></li>
-              </ul>
+function FounderSection() {
+  return (
+    <section className="py-16 sm:py-24 md:py-32 bg-white border-y border-neutral-200">
+      <div className="container-main">
+        <div className="max-w-4xl mx-auto text-center">
+          {/* Quote Icon */}
+          <div className="flex justify-center mb-6 sm:mb-8">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary-50 flex items-center justify-center">
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-primary-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+              </svg>
             </div>
           </div>
 
-          <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-neutral-200 pt-8 sm:flex-row">
-            <p className="text-sm text-neutral-500">
-              © {new Date().getFullYear()} Pixly. Tous droits réservés.
+          {/* Quote */}
+          <blockquote className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif text-neutral-900 leading-snug sm:leading-tight">
+            &ldquo;{CONTENT.founder.quote}&rdquo;
+          </blockquote>
+
+          {/* Author info */}
+          <div className="mt-8 sm:mt-12 flex flex-col items-center">
+            {/* Avatar */}
+            <div className="relative h-16 w-16 overflow-hidden rounded-full ring-4 ring-primary-100 mb-4">
+              <Image
+                src={CONTENT.founder.image}
+                alt={CONTENT.founder.name}
+                fill
+                className="object-cover"
+              />
+            </div>
+            <p className="text-lg font-semibold text-neutral-900">
+              {CONTENT.founder.name}
             </p>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1.5 text-sm text-neutral-500">
-                <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                Tous les systèmes opérationnels
-              </span>
+            <p className="mt-1 text-sm text-primary-600 font-medium tracking-wide">
+              {CONTENT.founder.role}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Pricing() {
+  return (
+    <section id="tarifs" className="section gradient-section">
+      <div className="container-main">
+        <div className="text-center mb-10 sm:mb-16">
+          <span className="label">{CONTENT.pricing.label}</span>
+          <h2 className="heading-lg mt-3 sm:mt-4">{CONTENT.pricing.title}</h2>
+          <p className="text-body mt-3 sm:mt-4">{CONTENT.pricing.subtitle}</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-5 sm:gap-6 max-w-5xl mx-auto">
+          {CONTENT.pricing.plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`card-pricing ${plan.popular ? 'featured' : ''}`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary-500 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  Recommandé
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-lg font-semibold">{plan.name}</h3>
+                <p className="text-small mt-1">{plan.description}</p>
+
+                <div className="mt-6 mb-6">
+                  <span className="text-4xl font-bold">{plan.price}€</span>
+                  <span className="text-neutral-500">/mois</span>
+                </div>
+
+                <ul className="space-y-3 mb-8">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-3 text-sm text-neutral-600">
+                      <Check className="h-5 w-5 text-primary-500 flex-shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <Link
+                  href="/login"
+                  className={`btn btn-lg w-full justify-center ${
+                    plan.popular ? 'btn-primary' : 'btn-outline'
+                  }`}
+                >
+                  Commencer l'essai
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function FinalCTA() {
+  return (
+    <section className="section bg-neutral-50">
+      <div className="container-main">
+        <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-br from-primary-50 via-white to-emerald-50 border border-primary-100 px-5 py-12 sm:px-12 sm:py-24 overflow-hidden">
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-40 h-40 sm:w-64 sm:h-64 bg-primary-100/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-32 h-32 sm:w-48 sm:h-48 bg-emerald-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+          <div className="relative text-center max-w-2xl mx-auto">
+            <h2 className="heading-lg mb-3 sm:mb-4">{CONTENT.cta.title}</h2>
+            <p className="text-neutral-600 text-base sm:text-lg mb-8 sm:mb-10">{CONTENT.cta.subtitle}</p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href="/login" className="btn btn-primary btn-xl w-full sm:w-auto">
+                {CONTENT.cta.primaryCta}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+              <Link href="#" className="btn btn-outline btn-xl w-full sm:w-auto">
+                {CONTENT.cta.secondaryCta}
+              </Link>
             </div>
           </div>
         </div>
-      </footer>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-neutral-200 py-10 sm:py-16">
+      <div className="container-main">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-8 mb-10 sm:mb-12">
+          <div className="col-span-2">
+            <Logo href="/" size="sm" />
+            <p className="text-small mt-4 max-w-xs">{CONTENT.footer.description}</p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-neutral-900 mb-4">Produit</h4>
+            <ul className="space-y-2">
+              {CONTENT.footer.links.product.map((link) => (
+                <li key={link}>
+                  <Link href="#" className="text-small hover:text-neutral-900 transition-colors">
+                    {link}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-neutral-900 mb-4">Ressources</h4>
+            <ul className="space-y-2">
+              {CONTENT.footer.links.resources.map((link) => (
+                <li key={link}>
+                  <Link href="#" className="text-small hover:text-neutral-900 transition-colors">
+                    {link}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-neutral-900 mb-4">Légal</h4>
+            <ul className="space-y-2">
+              {CONTENT.footer.links.legal.map((link) => (
+                <li key={link}>
+                  <Link href="#" className="text-small hover:text-neutral-900 transition-colors">
+                    {link}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="divider mb-8" />
+
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-small">
+            © {new Date().getFullYear()} Pixly. Tous droits réservés.
+          </p>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            <span className="text-small">Systèmes opérationnels</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ===========================================
+// PAGE
+// ===========================================
+
+export default function LandingPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      <Navigation />
+      <Hero />
+      <LogoCloud />
+      <Dashboard />
+      <Features />
+      <Testimonials />
+      <FounderSection />
+      <Pricing />
+      <FinalCTA />
+      <Footer />
     </div>
   );
 }

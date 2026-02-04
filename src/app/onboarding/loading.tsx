@@ -1,77 +1,89 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { LogoLoader } from '@/components/ui/loader';
 import { Skeleton, SkeletonButton } from '@/components/ui/skeleton';
 
 // ===========================================
 // PIXLY - Onboarding Loading
-// Next.js automatic loading state for onboarding
+// Matches the two-panel onboarding layout
 // ===========================================
 
 export default function OnboardingLoading() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-neutral-50 p-6">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-xl"
-      >
-        {/* Logo and Progress */}
-        <div className="mb-8 flex flex-col items-center">
-          <LogoLoader size="md" />
+    <div className="flex min-h-screen bg-white">
+      {/* Left Panel Skeleton */}
+      <div className="hidden lg:flex lg:w-[420px] xl:w-[480px] flex-col bg-neutral-50 border-r border-neutral-100">
+        <div className="flex flex-col h-full px-10 py-10">
+          {/* Logo */}
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="h-9 w-9 rounded-xl" />
+            <Skeleton className="h-5 w-16" />
+          </div>
 
           {/* Progress Steps */}
-          <div className="mt-8 flex items-center gap-2">
-            {[1, 2, 3, 4].map((step) => (
-              <div key={step} className="flex items-center">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                {step < 4 && <Skeleton className="mx-1 h-0.5 w-8" />}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Content Card */}
-        <div className="rounded-2xl border border-neutral-200 bg-white p-8 shadow-sm">
-          {/* Step Title */}
-          <div className="mb-6 text-center">
-            <Skeleton className="mx-auto h-7 w-64" />
-            <Skeleton className="mx-auto mt-2 h-4 w-80" />
-          </div>
-
-          {/* Form Fields */}
-          <div className="space-y-6">
-            {[1, 2].map((i) => (
-              <div key={i}>
-                <Skeleton className="mb-2 h-4 w-28" />
-                <Skeleton className="h-12 w-full rounded-xl" />
-              </div>
-            ))}
-
-            {/* Options Grid */}
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-neutral-200 p-4"
-                >
-                  <Skeleton className="h-10 w-10 rounded-lg" />
-                  <Skeleton className="mt-3 h-4 w-24" />
-                  <Skeleton className="mt-1 h-3 w-32" />
+          <div className="mt-16">
+            <Skeleton className="h-3 w-24 mb-6" />
+            <div className="space-y-5">
+              {[1, 2, 3].map((step) => (
+                <div key={step} className="flex items-start gap-3">
+                  <Skeleton className="h-7 w-7 rounded-full flex-shrink-0" />
+                  <div className="pt-0.5">
+                    <Skeleton className="h-4 w-32" />
+                    {step === 1 && <Skeleton className="h-3 w-48 mt-1" />}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-8 flex justify-between">
-            <SkeletonButton size="md" width="w-24" />
-            <SkeletonButton size="md" width="w-32" />
+          {/* Benefits */}
+          <div className="mt-auto space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-neutral-100">
+                <Skeleton className="h-8 w-8 rounded-lg" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+            ))}
           </div>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Right Panel Skeleton */}
+      <div className="flex-1 flex flex-col min-h-screen">
+        {/* Mobile Header */}
+        <div className="lg:hidden flex items-center justify-between px-6 py-5 border-b border-neutral-100">
+          <div className="flex items-center gap-2.5">
+            <Skeleton className="h-9 w-9 rounded-xl" />
+            <Skeleton className="h-5 w-16" />
+          </div>
+          <Skeleton className="h-6 w-12 rounded-full" />
+        </div>
+
+        {/* Form Skeleton */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3 }}
+          className="flex-1 flex items-center justify-center p-6 sm:p-10"
+        >
+          <div className="w-full max-w-[440px]">
+            {/* Title */}
+            <Skeleton className="h-8 w-80 mb-3" />
+            <Skeleton className="h-4 w-64 mb-8" />
+
+            {/* Form Field */}
+            <div className="space-y-5">
+              <div>
+                <Skeleton className="h-4 w-28 mb-2" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+                <Skeleton className="h-3 w-48 mt-1.5" />
+              </div>
+
+              <SkeletonButton size="lg" width="w-full" />
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

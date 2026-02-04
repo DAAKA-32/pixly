@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import {
   DollarSign,
   TrendingUp,
@@ -9,8 +8,6 @@ import {
   Target,
   RefreshCw,
   BarChart3,
-  PieChart,
-  Activity,
 } from 'lucide-react';
 import { useAnalytics, type Period } from '@/hooks/use-analytics';
 import { MetricCard } from '@/components/dashboard/metric-card';
@@ -23,12 +20,6 @@ import { ExportButtons } from '@/components/dashboard/export-buttons';
 import { Button } from '@/components/ui/button';
 import { formatCurrency } from '@/lib/utils';
 import type { Channel } from '@/types';
-
-// ===========================================
-// PIXLY - Dashboard Page
-// Analytics Overview avec données réelles
-// Filtrage dynamique, alertes, export
-// ===========================================
 
 const channelColors: Record<Channel, string> = {
   meta: '#1877F2',
@@ -57,29 +48,9 @@ const channelLabels: Record<Channel, string> = {
 };
 
 const periodLabels: Record<Period, string> = {
-  '7d': '7 jours',
-  '30d': '30 jours',
-  '90d': '90 jours',
-};
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.3, ease: 'easeOut' },
-  },
+  '7d': '7j',
+  '30d': '30j',
+  '90d': '90j',
 };
 
 export default function DashboardPage() {
@@ -91,7 +62,6 @@ export default function DashboardPage() {
 
   const [filters, setFilters] = useState<DashboardFilters>(defaultFilters);
 
-  // Apply filters to campaigns
   const filteredCampaigns = useMemo(() => {
     if (!metrics?.byCampaign) return [];
 
@@ -119,7 +89,6 @@ export default function DashboardPage() {
     return result;
   }, [metrics?.byCampaign, filters]);
 
-  // Apply channel filter to channel breakdown
   const channelData = useMemo(() => {
     if (!metrics?.byChannel) return [];
 
@@ -143,7 +112,6 @@ export default function DashboardPage() {
       .sort((a, b) => b.value - a.value);
   }, [metrics?.byChannel, metrics?.overview.totalRevenue, filters.channels]);
 
-  // Revenue chart data
   const revenueChartData = useMemo(() => {
     if (!metrics?.revenueByDay) return [];
 
@@ -154,7 +122,6 @@ export default function DashboardPage() {
     }));
   }, [metrics?.revenueByDay]);
 
-  // Filtered conversions
   const filteredConversions = useMemo(() => {
     if (!metrics?.conversions) return [];
     if (filters.channels.length === 0) return metrics.conversions;
@@ -170,37 +137,39 @@ export default function DashboardPage() {
   }, [refresh]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Alerts */}
       {!isLoading && (
         <AlertNotification metrics={metrics} />
       )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header bar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Suivez vos performances marketing en temps réel
-          </p>
+          <h1 className="text-[22px] font-semibold tracking-tight text-neutral-900">
+            Vue d&apos;ensemble
+          </h1>
+          {isFetching && !isLoading && (
+            <p className="mt-0.5 text-[11px] text-neutral-400">Mise à jour...</p>
+          )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           <ExportButtons
             metrics={metrics}
             periodLabel={periodLabels[period]}
             isLoading={isLoading}
           />
 
-          <div className="flex rounded-xl border border-neutral-200 bg-white p-1">
+          <div className="flex rounded-lg border border-neutral-200/80 bg-white p-0.5">
             {(['7d', '30d', '90d'] as Period[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setPeriod(range)}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-md px-3 py-1.5 text-[13px] font-medium transition-all ${
                   period === range
-                    ? 'bg-primary-500 text-white'
-                    : 'text-neutral-600 hover:bg-neutral-100'
+                    ? 'bg-neutral-900 text-white'
+                    : 'text-neutral-500 hover:text-neutral-700'
                 }`}
               >
                 {periodLabels[range]}
@@ -214,43 +183,40 @@ export default function DashboardPage() {
             onClick={handleRefresh}
             disabled={isLoading}
             title="Rafraîchir"
-            className="relative"
+            className="relative h-8 w-8"
           >
-            <RefreshCw className={`h-4 w-4 transition-transform ${isFetching ? 'animate-spin' : ''}`} />
-            {isFetching && !isLoading && (
-              <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-primary-500 animate-pulse" />
-            )}
+            <RefreshCw className={`h-3.5 w-3.5 transition-transform ${isFetching ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>
 
-      {/* Filter Panel */}
+      {/* Filters */}
       <FilterPanel filters={filters} onFiltersChange={setFilters} />
 
-      {/* KPI Metrics Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Primary KPI row */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           title="Revenu Total"
           value={metrics?.overview.totalRevenue || 0}
           previousValue={(metrics?.overview.totalRevenue || 0) * 0.85}
           format="currency"
-          icon={<DollarSign className="h-5 w-5" />}
+          icon={<DollarSign className="h-4 w-4" />}
           isLoading={isLoading}
+          accent="#10b981"
         />
         <MetricCard
           title="ROAS"
           value={metrics?.overview.roas || 0}
           previousValue={(metrics?.overview.roas || 0) * 0.9}
           format="roas"
-          icon={<TrendingUp className="h-5 w-5" />}
-          description="Return on Ad Spend"
+          icon={<TrendingUp className="h-4 w-4" />}
           isLoading={isLoading}
         />
         <MetricCard
           title="Conversions"
           value={metrics?.overview.totalConversions || 0}
           previousValue={(metrics?.overview.totalConversions || 0) * 0.8}
-          icon={<ShoppingCart className="h-5 w-5" />}
+          icon={<ShoppingCart className="h-4 w-4" />}
           isLoading={isLoading}
         />
         <MetricCard
@@ -258,94 +224,53 @@ export default function DashboardPage() {
           value={metrics?.overview.aov || 0}
           previousValue={(metrics?.overview.aov || 0) * 0.95}
           format="currency"
-          icon={<Target className="h-5 w-5" />}
+          icon={<Target className="h-4 w-4" />}
           isLoading={isLoading}
         />
       </div>
 
-      {/* Secondary Metrics */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="grid grid-cols-1 gap-6 sm:grid-cols-3"
-      >
-        <motion.div
-          variants={itemVariants}
-          className="rounded-2xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-              <Activity className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-neutral-500">Dépenses Pub</p>
-              <p className="text-xl font-bold text-neutral-900">
-                {formatCurrency(metrics?.overview.totalSpend || 0)}
-              </p>
-            </div>
+      {/* Secondary metrics row - inline compact */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="flex items-center gap-4 rounded-xl border border-neutral-200/80 bg-white px-5 py-3.5">
+          <div>
+            <p className="text-[11px] font-medium text-neutral-400">Dépenses Pub</p>
+            <p className="mt-0.5 text-lg font-semibold tabular-nums text-neutral-900">
+              {formatCurrency(metrics?.overview.totalSpend || 0)}
+            </p>
           </div>
-          <p className="mt-2 text-xs text-neutral-400">
-            Données des plateformes publicitaires
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={itemVariants}
-          className="rounded-2xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50">
-              <BarChart3 className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-neutral-500">CPA</p>
-              <p className="text-xl font-bold text-neutral-900">
-                {formatCurrency(metrics?.overview.cpa || 0)}
-              </p>
-            </div>
+        </div>
+        <div className="flex items-center gap-4 rounded-xl border border-neutral-200/80 bg-white px-5 py-3.5">
+          <div>
+            <p className="text-[11px] font-medium text-neutral-400">CPA</p>
+            <p className="mt-0.5 text-lg font-semibold tabular-nums text-neutral-900">
+              {formatCurrency(metrics?.overview.cpa || 0)}
+            </p>
           </div>
-          <p className="mt-2 text-xs text-neutral-400">
-            Coût par acquisition
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={itemVariants}
-          className="rounded-2xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50">
-              <PieChart className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm text-neutral-500">Canaux actifs</p>
-              <p className="text-xl font-bold text-neutral-900">
-                {channelData.length}
-              </p>
-            </div>
+        </div>
+        <div className="flex items-center gap-4 rounded-xl border border-neutral-200/80 bg-white px-5 py-3.5">
+          <div>
+            <p className="text-[11px] font-medium text-neutral-400">Canaux actifs</p>
+            <p className="mt-0.5 text-lg font-semibold tabular-nums text-neutral-900">
+              {channelData.length}
+            </p>
           </div>
-          <p className="mt-2 text-xs text-neutral-400">
-            Sources de trafic avec conversions
-          </p>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <RevenueChart data={revenueChartData} isLoading={isLoading} />
         </div>
         <ChannelBreakdown data={channelData} isLoading={isLoading} />
       </div>
 
-      {/* Campaign Performance Table (filtered) */}
+      {/* Tables */}
       <CampaignTable
         campaigns={filteredCampaigns}
         isLoading={isLoading}
       />
 
-      {/* Recent Conversions Table (filtered) */}
       <ConversionTable
         conversions={filteredConversions}
         isLoading={isLoading}
@@ -353,24 +278,21 @@ export default function DashboardPage() {
 
       {/* Empty State */}
       {!isLoading && metrics?.overview.totalConversions === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="rounded-2xl border-2 border-dashed border-neutral-200 bg-neutral-50 p-12 text-center"
-        >
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-            <BarChart3 className="h-8 w-8 text-neutral-400" />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-neutral-900">
+        <div className="rounded-2xl border border-dashed border-neutral-200 bg-white p-10 text-center">
+          <BarChart3 className="mx-auto h-7 w-7 text-neutral-300" />
+          <h3 className="mt-3 text-[15px] font-semibold text-neutral-900">
             Aucune donnée pour cette période
           </h3>
-          <p className="mt-2 text-sm text-neutral-500">
+          <p className="mt-1.5 text-[13px] text-neutral-400">
             Installez votre pixel de tracking pour commencer à collecter des données.
           </p>
-          <Button className="mt-6" onClick={() => window.location.href = '/dashboard/integrations'}>
+          <Button
+            className="mt-5"
+            onClick={() => window.location.href = '/dashboard/integrations'}
+          >
             Installer le pixel
           </Button>
-        </motion.div>
+        </div>
       )}
     </div>
   );

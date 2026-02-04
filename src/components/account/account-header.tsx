@@ -1,14 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
 import { ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-// ===========================================
-// PIXLY - Account Page Header
-// Back navigation + title for full-width pages
-// ===========================================
 
 interface AccountHeaderProps {
   title: string;
@@ -25,33 +19,23 @@ export function AccountHeader({
 }: AccountHeaderProps) {
   const router = useRouter();
 
-  const handleBack = () => {
-    router.push(backHref);
-  };
-
   return (
-    <header className={cn('border-b border-neutral-200 bg-white', className)}>
-      <div className="mx-auto max-w-5xl px-6 py-6">
-        <motion.button
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          onClick={handleBack}
-          className="mb-4 flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+    <header className={cn('border-b border-neutral-200/80 bg-white', className)}>
+      <div className="mx-auto max-w-3xl px-6 py-5">
+        <button
+          onClick={() => router.push(backHref)}
+          className="mb-3 flex items-center gap-1.5 text-[13px] text-neutral-400 transition-colors hover:text-neutral-700"
         >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Retour au dashboard</span>
-        </motion.button>
+          <ArrowLeft className="h-3.5 w-3.5" />
+          Retour au dashboard
+        </button>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
-          <h1 className="text-2xl font-bold text-neutral-900">{title}</h1>
-          {description && (
-            <p className="mt-1 text-sm text-neutral-500">{description}</p>
-          )}
-        </motion.div>
+        <h1 className="text-[22px] font-semibold tracking-tight text-neutral-900">
+          {title}
+        </h1>
+        {description && (
+          <p className="mt-0.5 text-[13px] text-neutral-500">{description}</p>
+        )}
       </div>
     </header>
   );
