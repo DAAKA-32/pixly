@@ -1,40 +1,19 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
-import { LogoLoader } from '@/components/ui/loader';
+import type { Metadata } from 'next';
+import AuthLayoutClient from './auth-layout-client';
 
 // ===========================================
-// PIXLY - Auth Layout
-// Premium loading experience
+// PIXLY - Auth Layout (Server)
+// Server component wrapper for metadata support
 // ===========================================
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuth();
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.push('/dashboard');
-    }
-  }, [isLoading, isAuthenticated, router]);
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <LogoLoader size="md" text="Vérification..." />
-      </div>
-    );
-  }
-
-  if (isAuthenticated) {
-    return null;
-  }
-
-  return <>{children}</>;
+  return <AuthLayoutClient>{children}</AuthLayoutClient>;
 }

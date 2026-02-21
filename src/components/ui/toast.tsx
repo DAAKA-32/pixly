@@ -42,10 +42,10 @@ const toastConfig: Record<ToastType, {
 }> = {
   success: {
     icon: Check,
-    iconClass: 'text-green-600 bg-green-100',
+    iconClass: 'text-emerald-600 bg-emerald-100',
     bgClass: 'bg-white',
-    borderClass: 'border-green-200',
-    titleClass: 'text-green-900',
+    borderClass: 'border-emerald-200',
+    titleClass: 'text-emerald-900',
   },
   error: {
     icon: X,
@@ -63,10 +63,10 @@ const toastConfig: Record<ToastType, {
   },
   info: {
     icon: Info,
-    iconClass: 'text-blue-600 bg-blue-100',
+    iconClass: 'text-primary-600 bg-primary-100',
     bgClass: 'bg-white',
-    borderClass: 'border-blue-200',
-    titleClass: 'text-blue-900',
+    borderClass: 'border-primary-200',
+    titleClass: 'text-primary-900',
   },
 };
 
@@ -110,7 +110,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
           {/* Close button */}
           <button
             onClick={onRemove}
-            className="flex-shrink-0 rounded-lg p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+            className="flex-shrink-0 rounded-lg p-2 sm:p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
+            aria-label="Fermer la notification"
           >
             <X className="h-4 w-4" />
           </button>
@@ -124,10 +125,10 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         transition={{ duration: (toast.duration || 4000) / 1000, ease: 'linear' }}
         className={cn(
           'h-0.5 origin-left',
-          toast.type === 'success' && 'bg-green-400',
+          toast.type === 'success' && 'bg-emerald-400',
           toast.type === 'error' && 'bg-red-400',
           toast.type === 'warning' && 'bg-amber-400',
-          toast.type === 'info' && 'bg-blue-400'
+          toast.type === 'info' && 'bg-primary-400'
         )}
       />
     </motion.div>
@@ -137,7 +138,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
 // Toast Container
 function ToastContainer({ toasts, removeToast }: { toasts: Toast[]; removeToast: (id: string) => void }) {
   return (
-    <div className="fixed top-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+    <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 z-[100] flex flex-col gap-3 pointer-events-none max-w-[calc(100vw-2rem)] sm:max-w-sm">
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <ToastItem

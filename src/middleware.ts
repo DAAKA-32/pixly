@@ -14,7 +14,14 @@ export function middleware(request: NextRequest) {
 
   // Protected routes: redirect to login if not authenticated
   if (pathname.startsWith('/dashboard') ||
+      pathname.startsWith('/attribution') ||
+      pathname.startsWith('/funnel') ||
+      pathname.startsWith('/audience') ||
+      pathname.startsWith('/team') ||
+      pathname.startsWith('/integrations') ||
+      pathname.startsWith('/billing') ||
       pathname.startsWith('/onboarding') ||
+      pathname.startsWith('/checkout') ||
       pathname.startsWith('/settings') ||
       pathname.startsWith('/profile')) {
     if (!isAuthenticated) {
@@ -49,7 +56,14 @@ export const config = {
   matcher: [
     // Protected routes
     '/dashboard/:path*',
+    '/attribution/:path*',
+    '/funnel/:path*',
+    '/audience/:path*',
+    '/team/:path*',
+    '/integrations/:path*',
+    '/billing/:path*',
     '/onboarding/:path*',
+    '/checkout/:path*',
     '/settings/:path*',
     '/profile/:path*',
     // Auth routes (to redirect if already logged in)

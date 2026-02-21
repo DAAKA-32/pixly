@@ -6,8 +6,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   BarChart3,
+  Filter,
   Zap,
   CreditCard,
+  Users,
+  Target,
   HelpCircle,
   PanelLeftClose,
   X,
@@ -18,6 +21,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useWorkspace } from '@/hooks/use-workspace';
 import { useSidebar } from '@/hooks/use-sidebar';
+import { usePageNotifications } from '@/hooks/use-page-notifications';
+import type { HelpPageId } from '@/lib/help/content';
 import { ProfileMenu } from './profile-menu';
 import { LogoIcon } from '@/components/ui/logo';
 
@@ -29,9 +34,12 @@ import { LogoIcon } from '@/components/ui/logo';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Attribution', href: '/dashboard/attribution', icon: BarChart3 },
-  { name: 'Intégrations', href: '/dashboard/integrations', icon: Zap },
-  { name: 'Facturation', href: '/dashboard/billing', icon: CreditCard },
+  { name: 'Attribution', href: '/attribution', icon: BarChart3 },
+  { name: 'Funnel', href: '/funnel', icon: Filter },
+  { name: 'Audience', href: '/audience', icon: Target },
+  { name: 'Intégrations', href: '/integrations', icon: Zap },
+  { name: 'Équipe', href: '/team', icon: Users },
+  { name: 'Facturation', href: '/billing', icon: CreditCard },
 ];
 
 const SIDEBAR_WIDTH = 256;
@@ -41,6 +49,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const { currentWorkspace } = useWorkspace();
   const { isCollapsed, isMobileOpen, toggle, openMobile, closeMobile } = useSidebar();
+  const { isPageSeen } = usePageNotifications();
 
   const expanded = !isCollapsed;
 
@@ -78,7 +87,7 @@ export function Sidebar() {
           {mobile ? (
             <button
               onClick={closeMobile}
-              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
+              className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600 transition-colors"
               aria-label="Fermer le menu"
             >
               <X className="h-5 w-5" />
@@ -123,6 +132,8 @@ export function Sidebar() {
         <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = pathname === item.href;
+            const pageId = item.href.replace('/', '') as HelpPageId;
+            const hasNotification = !isActive && !isPageSeen(pageId);
             return (
               <Link
                 key={item.name}
@@ -130,7 +141,7 @@ export function Sidebar() {
                 onClick={mobile ? closeMobile : undefined}
                 className={cn(
                   'group relative flex items-center rounded-xl text-sm font-medium transition-colors',
-                  show ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5',
+                  show ? 'gap-3 px-3 py-3' : 'justify-center px-2 py-3',
                   isActive
                     ? 'bg-primary-50 text-primary-700'
                     : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
@@ -139,6 +150,14 @@ export function Sidebar() {
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />
                 {show && <span className="whitespace-nowrap">{item.name}</span>}
+                {hasNotification && (
+                  <span
+                    className={cn(
+                      'absolute h-2 w-2 rounded-full bg-primary-500',
+                      show ? 'right-2.5 top-2.5' : 'right-1.5 top-1.5'
+                    )}
+                  />
+                )}
                 {isActive && (
                   <motion.div
                     layoutId={mobile ? 'sidebar-active-mobile' : 'sidebar-active'}
@@ -158,7 +177,7 @@ export function Sidebar() {
             onClick={mobile ? closeMobile : undefined}
             className={cn(
               'flex items-center rounded-xl text-sm font-medium text-neutral-500 hover:bg-neutral-50 hover:text-neutral-700 transition-colors',
-              show ? 'gap-3 px-3 py-2.5' : 'justify-center px-2 py-2.5'
+              show ? 'gap-3 px-3 py-3' : 'justify-center px-2 py-3'
             )}
             title={!show ? 'Aide' : undefined}
           >
@@ -181,7 +200,7 @@ export function Sidebar() {
       <div className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center border-b border-neutral-200 bg-white px-4 lg:hidden">
         <button
           onClick={openMobile}
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors -ml-1"
+          className="flex h-11 w-11 items-center justify-center rounded-xl text-neutral-600 hover:bg-neutral-100 transition-colors -ml-1"
           aria-label="Ouvrir le menu"
         >
           <Menu className="h-5 w-5" />
@@ -190,7 +209,7 @@ export function Sidebar() {
           <LogoIcon size="xs" />
           <span className="text-lg font-bold text-neutral-900">Pixly</span>
         </Link>
-        <div className="w-9" />
+        <div className="w-11" />
       </div>
 
       {/* ── Desktop Sidebar ── */}
@@ -235,7 +254,8 @@ export function Sidebar() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 z-50 bg-black/30 backdrop-blur-[2px] lg:hidden"
-              onClick={closeMobile}
+              onClick={(e) => { e.stopPropagation(); closeMobile(); }}
+              aria-hidden="true"
             />
             <motion.aside
               initial={{ x: -SIDEBAR_WIDTH }}

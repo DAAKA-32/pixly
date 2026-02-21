@@ -7,11 +7,13 @@ export interface User {
   id: string;
   email: string;
   displayName: string | null;
-  photoURL: string | null;
   createdAt: Date;
   updatedAt: Date;
   plan: Plan;
   workspaceIds: string[];
+  onboardingCompleted?: boolean;
+  termsAcceptedAt?: Date;
+  termsVersion?: string;
 }
 
 export type Plan = 'free' | 'starter' | 'growth' | 'scale' | 'unlimited';
@@ -30,8 +32,10 @@ export interface Workspace {
 export interface WorkspaceSettings {
   timezone: string;
   currency: string;
+  startDate: string; // ISO date string — tracking start date
   attributionWindow: number; // days
   defaultAttributionModel: AttributionModel;
+  websiteUrl?: string;
 }
 
 export interface IntegrationStatus {
@@ -40,6 +44,7 @@ export interface IntegrationStatus {
   tiktok: IntegrationState;
   stripe: IntegrationState;
   shopify: IntegrationState;
+  hubspot: IntegrationState;
 }
 
 export interface IntegrationState {
@@ -113,7 +118,11 @@ export interface EventContext {
   userAgent: string;
   ip: string;
   country: string | null;
+  countryCode: string | null;
+  region: string | null;
   city: string | null;
+  latitude: number | null;
+  longitude: number | null;
   device: DeviceInfo;
 }
 
@@ -209,8 +218,19 @@ export interface DashboardMetrics {
   overview: OverviewMetrics;
   byChannel: Record<Channel, ChannelMetrics>;
   byCampaign: CampaignMetrics[];
+  byCountry?: GeoMetrics[];
   conversions: Conversion[];
   revenueByDay?: Array<{ date: string; revenue: number; conversions: number }>;
+}
+
+export interface GeoMetrics {
+  countryCode: string;
+  countryName: string;
+  conversions: number;
+  revenue: number;
+  visitors: number;
+  conversionRate: number;
+  roas: number;
 }
 
 export interface DateRange {
@@ -291,4 +311,130 @@ export interface PixelPayload {
   context: Partial<EventContext>;
   timestamp: number;
   hashedEmail?: string;
+}
+
+// ============ TEAM & ROLES ============
+export type WorkspaceRole = 'owner' | 'admin' | 'editor' | 'viewer';
+
+export interface WorkspaceMember {
+  userId: string;
+  email: string;
+  displayName: string | null;
+  role: WorkspaceRole;
+  joinedAt: Date;
+  invitedBy: string;
+}
+
+export interface WorkspaceInvite {
+  id: string;
+  workspaceId: string;
+  email: string;
+  role: WorkspaceRole;
+  invitedBy: string;
+  createdAt: Date;
+  expiresAt: Date;
+  status: 'pending' | 'accepted' | 'expired';
+}
+
+// ============ FUNNEL ============
+export interface FunnelStep {
+  name: string;
+  eventType: EventType;
+  count: number;
+  value: number;
+  dropoffRate: number;
+  conversionRate: number;
+}
+
+export interface FunnelData {
+  steps: FunnelStep[];
+  totalEntries: number;
+  totalCompletions: number;
+  overallConversionRate: number;
+  byChannel: Record<Channel, FunnelStep[]>;
+}
+
+// ============ AUDIENCE SEGMENTATION ============
+export interface AudienceSegment {
+  id: string;
+  name: string;
+  dimension: 'device' | 'country' | 'browser' | 'os' | 'channel' | 'campaign';
+  value: string;
+  visitors: number;
+  conversions: number;
+  revenue: number;
+  conversionRate: number;
+  aov: number;
+}
+
+// ============ SCHEDULED REPORTS ============
+export interface ScheduledReport {
+  id: string;
+  workspaceId: string;
+  name: string;
+  frequency: 'daily' | 'weekly' | 'monthly';
+  recipients: string[];
+  metrics: string[];
+  enabled: boolean;
+  lastSentAt: Date | null;
+  nextSendAt: Date;
+  createdAt: Date;
+}
+
+// ============ PUBLIC API ============
+export interface ApiKey {
+  id: string;
+  workspaceId: string;
+  name: string;
+  key: string;
+  prefix: string;
+  permissions: ApiPermission[];
+  createdAt: Date;
+  lastUsedAt: Date | null;
+  expiresAt: Date | null;
+}
+
+export type ApiPermission = 'read:metrics' | 'read:conversions' | 'read:campaigns' | 'write:events' | 'read:reports';
+
+// ============ WEBHOOKS (Zapier/Make) ============
+export interface WebhookEndpoint {
+  id: string;
+  workspaceId: string;
+  url: string;
+  events: WebhookEventType[];
+  secret: string;
+  active: boolean;
+  createdAt: Date;
+  lastTriggeredAt: Date | null;
+  failureCount: number;
+}
+
+export type WebhookEventType =
+  | 'conversion.created'
+  | 'conversion.synced'
+  | 'alert.triggered'
+  | 'integration.connected'
+  | 'integration.disconnected';
+
+// ============ DATA EXPORT ============
+export interface ExportConfig {
+  id: string;
+  workspaceId: string;
+  destination: 'bigquery' | 'snowflake' | 'redshift' | 's3';
+  connectionString: string;
+  schedule: 'hourly' | 'daily' | 'weekly';
+  tables: string[];
+  enabled: boolean;
+  lastExportAt: Date | null;
+  createdAt: Date;
+}
+
+// ============ i18n ============
+export type Locale = 'fr' | 'en';
+
+export interface LocaleConfig {
+  locale: Locale;
+  currency: string;
+  dateFormat: string;
+  numberFormat: string;
 }

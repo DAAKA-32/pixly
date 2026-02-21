@@ -22,7 +22,7 @@ import { formatCurrency, formatNumber } from '@/lib/utils';
 const COLORS = {
   primary: '#10b981',
   primaryLight: '#6ee7b7',
-  secondary: '#3b82f6',
+  secondary: '#0d9488',
   tertiary: '#f59e0b',
   quaternary: '#ef4444',
   neutral: '#737373',
@@ -125,7 +125,7 @@ export function RevenueChart({
         <div>
           <h3 className="text-[13px] font-medium text-neutral-500">{title}</h3>
           {hasData && (
-            <p className="mt-1 text-2xl font-semibold tracking-tight text-neutral-900">
+            <p className="mt-1 font-serif text-2xl tracking-tight text-neutral-900">
               {formatCurrency(totalRevenue)}
             </p>
           )}
@@ -140,7 +140,7 @@ export function RevenueChart({
         )}
       </div>
 
-      <div className="h-64">
+      <div className="h-56 sm:h-64 lg:h-72">
         {isLoading ? (
           <ChartSkeleton />
         ) : !hasData ? (
@@ -150,7 +150,7 @@ export function RevenueChart({
             <AreaChart data={data} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.12} />
+                  <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.15} />
                   <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -207,12 +207,14 @@ interface ChannelBreakdownProps {
   }[];
   title?: string;
   isLoading?: boolean;
+  formatValue?: (value: number) => string;
 }
 
 export function ChannelBreakdown({
   data,
   title = 'Canaux',
   isLoading = false,
+  formatValue,
 }: ChannelBreakdownProps) {
   const [mounted, setMounted] = useState(false);
   const hasData = data.length > 0 && data.some(d => d.value > 0);
@@ -236,25 +238,25 @@ export function ChannelBreakdown({
       <h3 className="mb-5 text-[13px] font-medium text-neutral-500">{title}</h3>
 
       {isLoading ? (
-        <div className="h-64">
+        <div className="h-72">
           <ChartSkeleton />
         </div>
       ) : !hasData ? (
-        <div className="h-64">
+        <div className="h-72">
           <ChartEmpty message="Aucune donnée par canal" />
         </div>
       ) : (
         <div className="flex flex-col gap-5">
           {/* Donut */}
-          <div className="mx-auto h-36 w-36">
+          <div className="mx-auto h-40 w-40 sm:h-44 sm:w-44">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={data}
                   cx="50%"
                   cy="50%"
-                  innerRadius={42}
-                  outerRadius={62}
+                  innerRadius={52}
+                  outerRadius={78}
                   dataKey="value"
                   paddingAngle={2}
                   strokeWidth={0}
@@ -270,25 +272,40 @@ export function ChannelBreakdown({
             </ResponsiveContainer>
           </div>
 
-          {/* Channel list */}
-          <div className="space-y-2.5">
+          {/* Channel list with progress bars */}
+          <div className="space-y-3">
             {data.slice(0, 5).map((item) => {
               const color = item.color || CHANNEL_COLORS[item.channel] || COLORS.neutral;
               return (
-                <div key={item.channel} className="group flex items-center gap-3">
-                  <div
-                    className="h-2 w-2 flex-shrink-0 rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                  <span className="flex-1 truncate text-[13px] text-neutral-600">
-                    {item.label || item.channel}
-                  </span>
-                  <span className="text-[13px] font-semibold tabular-nums text-neutral-900">
-                    {formatCurrency(item.value)}
-                  </span>
-                  <span className="w-10 text-right text-[11px] tabular-nums text-neutral-400">
-                    {item.percentage.toFixed(0)}%
-                  </span>
+                <div key={item.channel} className="group">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-2 w-2 flex-shrink-0 rounded-full"
+                      style={{ backgroundColor: color }}
+                    />
+                    <span className="flex-1 truncate text-[13px] text-neutral-600">
+                      {item.label || item.channel}
+                    </span>
+                    <span className="text-[13px] font-semibold tabular-nums text-neutral-900">
+                      {(formatValue || formatCurrency)(item.value)}
+                    </span>
+                    <span className="w-10 text-right text-[11px] tabular-nums text-neutral-400">
+                      {item.percentage.toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="ml-5 mt-1.5 flex items-center gap-2">
+                    <div className="h-1 flex-1 overflow-hidden rounded-full bg-neutral-100">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(item.percentage, 2)}%`, backgroundColor: color }}
+                      />
+                    </div>
+                    {item.conversions !== undefined && (
+                      <span className="flex-shrink-0 text-[10px] tabular-nums text-neutral-400">
+                        {item.conversions} conv.
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}

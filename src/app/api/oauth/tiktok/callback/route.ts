@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
+import { encryptToken } from '@/lib/crypto/tokens';
 
 // ===========================================
 // PIXLY - TikTok Ads OAuth Callback
@@ -46,13 +47,13 @@ export async function GET(request: NextRequest) {
   if (error) {
     console.error('TikTok auth error:', error, errorDescription);
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=tiktok_auth_failed', request.url)
+      new URL('/integrations?error=tiktok_auth_failed', request.url)
     );
   }
 
   if (!authCode) {
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=no_code', request.url)
+      new URL('/integrations?error=no_code', request.url)
     );
   }
 
@@ -78,7 +79,7 @@ export async function GET(request: NextRequest) {
     if (tokenData.code !== 0 || !tokenData.data) {
       console.error('TikTok token error:', tokenData.message);
       return NextResponse.redirect(
-        new URL('/dashboard/integrations?error=token_exchange_failed', request.url)
+        new URL('/integrations?error=token_exchange_failed', request.url)
       );
     }
 
@@ -120,20 +121,20 @@ export async function GET(request: NextRequest) {
           connectedAt: new Date(),
           accountId: accountId,
           accountName: accountName,
-          accessToken: access_token,
-          refreshToken: refresh_token,
+          accessToken: encryptToken(access_token),
+          refreshToken: encryptToken(refresh_token),
           expiresAt: new Date(Date.now() + expires_in * 1000),
         },
       });
     }
 
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?success=tiktok', request.url)
+      new URL('/integrations?success=tiktok', request.url)
     );
   } catch (error) {
     console.error('TikTok OAuth error:', error);
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=oauth_failed', request.url)
+      new URL('/integrations?error=oauth_failed', request.url)
     );
   }
 }

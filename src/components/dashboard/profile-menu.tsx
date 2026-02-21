@@ -118,9 +118,10 @@ export function ProfileMenu({ isCollapsed = false }: ProfileMenuProps) {
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
             className={cn(
-              'absolute bottom-full left-0 right-0 mb-2 z-50',
+              'absolute left-0 right-0 z-50',
+              'bottom-full mb-2',
               'rounded-xl border border-neutral-200 bg-white shadow-lg',
-              'overflow-hidden'
+              'overflow-hidden max-h-[calc(100vh-120px)] overflow-y-auto'
             )}
             role="menu"
             aria-orientation="vertical"
@@ -143,7 +144,7 @@ export function ProfileMenu({ isCollapsed = false }: ProfileMenuProps) {
                   key={item.id}
                   onClick={() => handleNavigate(item.href)}
                   className={cn(
-                    'flex w-full items-center gap-3 px-4 py-2.5 text-left',
+                    'flex w-full items-center gap-3 px-4 py-3 text-left',
                     'text-sm text-neutral-700 transition-colors',
                     'hover:bg-neutral-50 focus:bg-neutral-50 focus:outline-none'
                   )}
@@ -183,14 +184,13 @@ export function ProfileMenu({ isCollapsed = false }: ProfileMenuProps) {
         aria-expanded={isOpen}
         aria-haspopup="menu"
         className={cn(
-          'flex w-full items-center gap-3 rounded-xl p-2 transition-colors',
+          'flex w-full items-center gap-3 rounded-xl p-2.5 transition-colors',
           'hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2',
           isOpen && 'bg-neutral-50',
           isCollapsed && 'justify-center'
         )}
       >
         <Avatar
-          src={user?.photoURL || undefined}
           fallback={user?.displayName || user?.email || 'U'}
           size="md"
         />

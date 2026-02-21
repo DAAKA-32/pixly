@@ -9,12 +9,12 @@ import { cn } from '@/lib/utils';
 // ===========================================
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
   {
     variants: {
       variant: {
         primary:
-          'bg-primary-500 text-white hover:bg-primary-600 shadow-soft hover:shadow-medium',
+          'bg-primary-600 text-white hover:bg-primary-700 shadow-soft hover:shadow-medium',
         secondary:
           'bg-neutral-100 text-neutral-900 hover:bg-neutral-200',
         outline:
@@ -22,19 +22,19 @@ const buttonVariants = cva(
         ghost:
           'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900',
         danger:
-          'bg-error text-white hover:bg-error-dark shadow-soft',
+          'bg-red-500 text-white hover:bg-red-600 shadow-soft',
         success:
-          'bg-success text-white hover:bg-success-dark shadow-soft',
+          'bg-emerald-500 text-white hover:bg-emerald-600 shadow-soft',
         link:
           'text-primary-600 underline-offset-4 hover:underline',
       },
       size: {
-        sm: 'h-9 px-4 text-sm',
+        sm: 'h-10 px-4 text-sm',
         md: 'h-11 px-6 text-sm',
         lg: 'h-12 px-8 text-base',
         xl: 'h-14 px-10 text-lg',
-        icon: 'h-10 w-10',
-        'icon-sm': 'h-8 w-8',
+        icon: 'h-11 w-11',
+        'icon-sm': 'h-9 w-9',
         'icon-lg': 'h-12 w-12',
       },
     },
@@ -82,7 +82,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span>Loading...</span>
+            <span>Chargement...</span>
           </>
         ) : (
           children

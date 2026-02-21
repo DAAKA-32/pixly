@@ -11,8 +11,8 @@ export function cn(...inputs: ClassValue[]) {
 
 export function formatCurrency(
   amount: number,
-  currency: string = 'USD',
-  locale: string = 'en-US'
+  currency: string = 'EUR',
+  locale: string = 'fr-FR'
 ): string {
   return new Intl.NumberFormat(locale, {
     style: 'currency',
@@ -30,7 +30,7 @@ export function formatNumber(
   }
 ): string {
   if (options?.compact) {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('fr-FR', {
       notation: 'compact',
       maximumFractionDigits: 1,
     }).format(num);
@@ -54,7 +54,7 @@ export function formatDate(
   date: Date,
   options?: Intl.DateTimeFormatOptions
 ): string {
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat('fr-FR', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -67,22 +67,22 @@ export function formatRelativeTime(date: Date): string {
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return 'Just now';
+    return 'À l\'instant';
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
   if (diffInMinutes < 60) {
-    return `${diffInMinutes}m ago`;
+    return `Il y a ${diffInMinutes} min`;
   }
 
   const diffInHours = Math.floor(diffInMinutes / 60);
   if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
+    return `Il y a ${diffInHours}h`;
   }
 
   const diffInDays = Math.floor(diffInHours / 24);
   if (diffInDays < 7) {
-    return `${diffInDays}d ago`;
+    return `Il y a ${diffInDays}j`;
   }
 
   return formatDate(date);

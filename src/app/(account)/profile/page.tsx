@@ -1,26 +1,77 @@
 'use client';
 
-import { useState } from 'react';
-import { Mail, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Mail, AlertTriangle, Check } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
+import { updateUserProfile, resetPassword, deleteCurrentUser } from '@/lib/firebase/auth';
+import { updateUserNotifications, getUserNotifications } from '@/lib/firebase/firestore';
 import { AccountHeader } from '@/components/account/account-header';
-import { EditableAvatar } from '@/components/ui/avatar';
+import { Avatar } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
+  const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [email] = useState(user?.email || '');
   const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
-    // TODO: Implement save profile
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsSaving(false);
+    setError(null);
+    try {
+      await updateUserProfile(displayName);
+      await refreshUser();
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    } catch (err) {
+      console.error('Error saving profile:', err);
+      setError('Erreur lors de la sauvegarde');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePasswordReset = async () => {
+    if (!user?.email) return;
+    setError(null);
+    try {
+      await resetPassword(user.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 5000);
+    } catch (err) {
+      console.error('Error sending password reset:', err);
+      setError('Erreur lors de l\'envoi de l\'email');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'supprimer') return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await deleteCurrentUser();
+      await logout();
+      router.push('/');
+    } catch (err: unknown) {
+      console.error('Error deleting account:', err);
+      const firebaseErr = err as { code?: string };
+      if (firebaseErr.code === 'auth/requires-recent-login') {
+        setError('Veuillez vous reconnecter avant de supprimer votre compte');
+      } else {
+        setError('Erreur lors de la suppression du compte');
+      }
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const userName = user?.displayName || user?.email || 'Utilisateur';
@@ -32,7 +83,7 @@ export default function ProfilePage() {
         description="Informations personnelles et sécurité"
       />
 
-      <main className="mx-auto max-w-3xl px-6 py-8">
+      <main className="mx-auto max-w-3xl px-4 sm:px-6 py-8">
         <div className="space-y-10">
 
           {/* ── Profile card ── */}
@@ -41,14 +92,10 @@ export default function ProfilePage() {
 
             <div className="rounded-2xl border border-neutral-200/80 bg-white">
               <div className="flex items-center gap-4 px-5 py-5">
-                <EditableAvatar
-                  src={user?.photoURL || undefined}
+                <Avatar
                   fallback={userName}
                   size="lg"
                   className="h-14 w-14 text-lg"
-                  onEdit={() => {
-                    // TODO: Open file picker
-                  }}
                 />
                 <div className="flex-1">
                   <p className="text-[15px] font-semibold text-neutral-900">
@@ -103,7 +150,16 @@ export default function ProfilePage() {
 
               <Divider />
 
-              <div className="flex justify-end px-5 py-3.5">
+              <div className="flex items-center justify-end gap-3 px-5 py-3.5">
+                {saveSuccess && (
+                  <span className="flex items-center gap-1.5 text-[12px] text-emerald-600">
+                    <Check className="h-3.5 w-3.5" />
+                    Enregistré
+                  </span>
+                )}
+                {error && (
+                  <span className="text-[12px] text-red-500">{error}</span>
+                )}
                 <Button size="sm" onClick={handleSave} isLoading={isSaving} className="h-8 px-4 text-[12px]">
                   Enregistrer
                 </Button>
@@ -120,11 +176,19 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-[13px] font-medium text-neutral-900">Mot de passe</p>
                   <p className="mt-0.5 text-[12px] text-neutral-400">
-                    Modifié récemment
+                    {passwordResetSent
+                      ? 'Email de réinitialisation envoyé !'
+                      : 'Recevez un email pour modifier votre mot de passe'}
                   </p>
                 </div>
-                <Button variant="outline" size="sm" className="h-8 px-3 text-[12px]">
-                  Modifier
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 text-[12px]"
+                  onClick={handlePasswordReset}
+                  disabled={passwordResetSent}
+                >
+                  {passwordResetSent ? 'Envoyé' : 'Modifier'}
                 </Button>
               </div>
 
@@ -143,26 +207,7 @@ export default function ProfilePage() {
           </section>
 
           {/* ── Notifications ── */}
-          <section>
-            <SectionLabel>Notifications</SectionLabel>
-
-            <div className="rounded-2xl border border-neutral-200/80 bg-white divide-y divide-neutral-100">
-              <NotificationToggle
-                title="Rapports hebdomadaires"
-                description="Résumé de vos performances chaque semaine"
-                defaultChecked
-              />
-              <NotificationToggle
-                title="Alertes de performance"
-                description="Notification quand une campagne sous-performe"
-                defaultChecked
-              />
-              <NotificationToggle
-                title="Mises à jour produit"
-                description="Nouvelles fonctionnalités et améliorations"
-              />
-            </div>
-          </section>
+          <NotificationsSection userId={user?.id} />
 
           {/* ── Danger zone ── */}
           <section>
@@ -190,6 +235,8 @@ export default function ProfilePage() {
                       variant="danger"
                       size="sm"
                       disabled={deleteConfirm !== 'supprimer'}
+                      isLoading={isDeleting}
+                      onClick={handleDeleteAccount}
                       className="h-9 px-4 text-[12px]"
                     >
                       Supprimer
@@ -227,39 +274,71 @@ function Divider() {
   return <div className="border-t border-neutral-100" />;
 }
 
-function NotificationToggle({
-  title,
-  description,
-  defaultChecked = false,
-}: {
-  title: string;
-  description: string;
-  defaultChecked?: boolean;
-}) {
-  const [checked, setChecked] = useState(defaultChecked);
+const NOTIFICATION_KEYS = [
+  { key: 'weeklyReports', title: 'Rapports hebdomadaires', description: 'Résumé de vos performances chaque semaine', defaultValue: true },
+  { key: 'performanceAlerts', title: 'Alertes de performance', description: 'Notification quand une campagne sous-performe', defaultValue: true },
+  { key: 'productUpdates', title: 'Mises à jour produit', description: 'Nouvelles fonctionnalités et améliorations', defaultValue: false },
+] as const;
+
+function NotificationsSection({ userId }: { userId?: string }) {
+  const [prefs, setPrefs] = useState<Record<string, boolean>>(() => {
+    const defaults: Record<string, boolean> = {};
+    NOTIFICATION_KEYS.forEach((n) => { defaults[n.key] = n.defaultValue; });
+    return defaults;
+  });
+
+  useEffect(() => {
+    if (!userId) return;
+    getUserNotifications(userId).then((saved) => {
+      if (Object.keys(saved).length > 0) {
+        setPrefs((prev) => ({ ...prev, ...saved }));
+      }
+    });
+  }, [userId]);
+
+  const handleToggle = async (key: string) => {
+    const updated = { ...prefs, [key]: !prefs[key] };
+    setPrefs(updated);
+    if (userId) {
+      try {
+        await updateUserNotifications(userId, updated);
+      } catch (err) {
+        console.error('Error saving notification preferences:', err);
+        // Revert on error
+        setPrefs(prefs);
+      }
+    }
+  };
 
   return (
-    <div className="flex items-center justify-between px-5 py-4">
-      <div>
-        <p className="text-[13px] font-medium text-neutral-900">{title}</p>
-        <p className="mt-0.5 text-[12px] text-neutral-400">{description}</p>
+    <section>
+      <SectionLabel>Notifications</SectionLabel>
+      <div className="rounded-2xl border border-neutral-200/80 bg-white divide-y divide-neutral-100">
+        {NOTIFICATION_KEYS.map((n) => (
+          <div key={n.key} className="flex items-center justify-between px-5 py-4">
+            <div>
+              <p className="text-[13px] font-medium text-neutral-900">{n.title}</p>
+              <p className="mt-0.5 text-[12px] text-neutral-400">{n.description}</p>
+            </div>
+            <button
+              role="switch"
+              aria-checked={prefs[n.key]}
+              onClick={() => handleToggle(n.key)}
+              className={cn(
+                'relative h-5 w-9 rounded-full transition-colors',
+                prefs[n.key] ? 'bg-neutral-900' : 'bg-neutral-200'
+              )}
+            >
+              <span
+                className={cn(
+                  'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform',
+                  prefs[n.key] && 'translate-x-4'
+                )}
+              />
+            </button>
+          </div>
+        ))}
       </div>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={() => setChecked(!checked)}
-        className={cn(
-          'relative h-5 w-9 rounded-full transition-colors',
-          checked ? 'bg-neutral-900' : 'bg-neutral-200'
-        )}
-      >
-        <span
-          className={cn(
-            'absolute top-0.5 left-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform',
-            checked && 'translate-x-4'
-          )}
-        />
-      </button>
-    </div>
+    </section>
   );
 }

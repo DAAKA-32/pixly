@@ -220,6 +220,6 @@ export const validationMessages = {
     tooShort: 'Le nom doit contenir au moins 2 caractères',
   },
   terms: {
-    required: 'Veuillez accepter les conditions d\'utilisation',
+    required: 'Veuillez accepter les CGU et la politique de confidentialité pour continuer',
   },
 };

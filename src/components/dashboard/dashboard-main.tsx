@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 import { useSidebar } from '@/hooks/use-sidebar';
+import { PageNotification } from './page-notification';
 import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from './sidebar';
 
 // ===========================================
 // PIXLY - Dashboard Main Content Area
 // Responsive to sidebar collapse state
+// Content fade-in on route transitions
 // Mobile: full-width with top header offset
 // ===========================================
 
@@ -17,6 +20,7 @@ interface DashboardMainProps {
 
 export function DashboardMain({ children }: DashboardMainProps) {
   const { isCollapsed } = useSidebar();
+  const pathname = usePathname();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -44,7 +48,15 @@ export function DashboardMain({ children }: DashboardMainProps) {
       }}
       className="min-h-screen px-4 pb-6 pt-20 lg:px-8 lg:pb-8 lg:pt-8"
     >
-      {children}
+      <motion.div
+        key={pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <PageNotification />
+        {children}
+      </motion.div>
     </motion.main>
   );
 }

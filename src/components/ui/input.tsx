@@ -37,7 +37,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               'absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors duration-200',
               isFocused ? 'text-primary-500' : 'text-neutral-400',
               error && 'text-red-400',
-              success && 'text-green-500'
+              success && 'text-emerald-500'
             )}
           >
             {icon}
@@ -56,7 +56,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             // Error state
             error && 'border-red-300 focus:border-red-400 focus:ring-red-500/20 bg-red-50/30',
             // Success state
-            success && 'border-green-300 focus:border-green-400 focus:ring-green-500/20',
+            success && 'border-emerald-300 focus:border-emerald-400 focus:ring-emerald-500/20',
             // Icon padding
             icon && 'pl-11',
             className

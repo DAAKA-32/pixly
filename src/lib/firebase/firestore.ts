@@ -119,6 +119,64 @@ export async function updateIntegrationStatus(
   });
 }
 
+export async function updateWorkspaceName(
+  workspaceId: string,
+  name: string
+) {
+  await updateDoc(doc(db, 'workspaces', workspaceId), {
+    name,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function deleteWorkspaceById(
+  workspaceId: string,
+  userId: string
+) {
+  // Remove workspace from user's workspaceIds
+  const userRef = doc(db, 'users', userId);
+  const userDoc = await getDoc(userRef);
+  if (userDoc.exists()) {
+    const currentIds: string[] = userDoc.data().workspaceIds || [];
+    await updateDoc(userRef, {
+      workspaceIds: currentIds.filter((id) => id !== workspaceId),
+    });
+  }
+
+  // Delete workspace document
+  await deleteDoc(doc(db, 'workspaces', workspaceId));
+}
+
+export async function updateUserNotifications(
+  userId: string,
+  notifications: Record<string, boolean>
+) {
+  await updateDoc(doc(db, 'users', userId), {
+    notifications,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function getUserNotifications(
+  userId: string
+): Promise<Record<string, boolean>> {
+  const userDocSnap = await getDoc(doc(db, 'users', userId));
+  if (userDocSnap.exists()) {
+    return userDocSnap.data().notifications || {};
+  }
+  return {};
+}
+
+export async function updateUserOnboarding(
+  userId: string,
+  completed: boolean
+) {
+  await updateDoc(doc(db, 'users', userId), {
+    onboardingCompleted: completed,
+    updatedAt: serverTimestamp(),
+  });
+}
+
 // ============ EVENTS ============
 
 export async function saveTrackingEvent(event: Omit<TrackingEvent, 'id'>) {
@@ -316,6 +374,7 @@ function getDefaultSettings(): WorkspaceSettings {
   return {
     timezone: 'UTC',
     currency: 'USD',
+    startDate: new Date().toISOString().split('T')[0],
     attributionWindow: 30,
     defaultAttributionModel: 'last_click',
   };
@@ -338,6 +397,7 @@ function getDefaultIntegrations(): IntegrationStatus {
     tiktok: { ...defaultState },
     stripe: { ...defaultState },
     shopify: { ...defaultState },
+    hubspot: { ...defaultState },
   };
 }
 

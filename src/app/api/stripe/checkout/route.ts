@@ -12,6 +12,7 @@ import { cookies } from 'next/headers';
 interface CheckoutRequestBody {
   planId: string;
   billingInterval: 'monthly' | 'annual';
+  source?: 'onboarding';
 }
 
 export async function POST(request: NextRequest) {
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body: CheckoutRequestBody = await request.json();
-    const { planId, billingInterval } = body;
+    const { planId, billingInterval, source } = body;
 
     // Validate plan
     const plan = getPlanById(planId);
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
       // User already has a subscription - redirect to customer portal
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: stripeCustomerId,
-        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`,
+        return_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing`,
       });
 
       return NextResponse.json({
@@ -146,9 +147,13 @@ export async function POST(request: NextRequest) {
       payment_method_collection: STRIPE_CONFIG.trial.requiresPaymentMethod
         ? 'always'
         : 'if_required',
-      // URLs
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}${STRIPE_CONFIG.urls.success}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}${STRIPE_CONFIG.urls.cancel}&plan=${planId}`,
+      // URLs — onboarding source returns to onboarding flow
+      success_url: source === 'onboarding'
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?session_id={CHECKOUT_SESSION_ID}`
+        : `${process.env.NEXT_PUBLIC_APP_URL}${STRIPE_CONFIG.urls.success}`,
+      cancel_url: source === 'onboarding'
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?canceled=true`
+        : `${process.env.NEXT_PUBLIC_APP_URL}${STRIPE_CONFIG.urls.cancel}&plan=${planId}`,
       // Metadata for tracking
       metadata: {
         userId,

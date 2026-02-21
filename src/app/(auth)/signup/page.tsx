@@ -1,22 +1,15 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { AuthTransition } from '@/components/auth/auth-transition';
+import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 // ===========================================
-// PIXLY - Signup Redirect
-// Clean redirect to unified auth page
+// PIXLY - Signup Redirect (Server)
+// SEO: noindex, server-side redirect to /login
 // ===========================================
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default function SignupPage() {
-  const router = useRouter();
-
-  useEffect(() => {
-    // Clean redirect - no URL params
-    router.replace('/login');
-  }, [router]);
-
-  // Premium loading state while redirecting
-  return <AuthTransition message="Redirection vers la page de connexion..." />;
+  redirect('/login?mode=signup');
 }

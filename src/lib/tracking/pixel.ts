@@ -1,4 +1,5 @@
 import type { PixelPayload, TrackingEvent, EventType, ClickIds } from '@/types';
+import { geoService } from './geolocation';
 
 // ===========================================
 // PIXLY - Pixel Processing
@@ -75,14 +76,17 @@ export function extractValue(payload: PixelPayload): {
   return { value, currency };
 }
 
-export function buildTrackingEvent(
+export async function buildTrackingEvent(
   payload: PixelPayload,
   workspaceId: string,
   ip: string
-): Omit<TrackingEvent, 'id'> {
+): Promise<Omit<TrackingEvent, 'id'>> {
   const eventType = normalizeEventType(payload.event);
   const clickIds = extractClickIds(payload);
   const { value, currency } = extractValue(payload);
+
+  // Lookup geolocation from IP
+  const geo = await geoService.lookup(ip);
 
   return {
     pixelId: payload.pixelId,
@@ -100,8 +104,12 @@ export function buildTrackingEvent(
       referrer: payload.context?.referrer || '',
       userAgent: payload.context?.userAgent || '',
       ip,
-      country: null, // Can be enriched with IP geolocation
-      city: null,
+      country: geo?.countryName || null,
+      countryCode: geo?.country || null,
+      region: geo?.region || null,
+      city: geo?.city || null,
+      latitude: geo?.latitude || null,
+      longitude: geo?.longitude || null,
       device: {
         type: payload.context?.device?.type || 'desktop',
         os: payload.context?.device?.os || 'Unknown',

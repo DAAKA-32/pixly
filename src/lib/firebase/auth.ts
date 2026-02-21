@@ -7,8 +7,10 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
+  sendPasswordResetEmail,
+  deleteUser,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from './config';
 import type { User } from '@/types';
 
@@ -33,22 +35,35 @@ export async function signUpWithEmail(
   // Update profile with display name
   await updateProfile(result.user, { displayName });
 
-  // Create user document in Firestore
+  // Create user document in Firestore (terms accepted via modal + API, not here)
   await createUserDocument(result.user, displayName);
+
+  // Send welcome email (non-blocking)
+  triggerWelcomeEmail().catch(() => {});
 
   return result.user;
 }
 
-export async function signInWithGoogle() {
+export interface GoogleSignInResult {
+  user: FirebaseUser;
+  isNewUser: boolean;
+}
+
+export async function signInWithGoogle(): Promise<GoogleSignInResult> {
   const result = await signInWithPopup(auth, googleProvider);
 
-  // Check if user document exists, create if not
+  // Check if user document exists
   const userDoc = await getDoc(doc(db, 'users', result.user.uid));
-  if (!userDoc.exists()) {
+  const isNewUser = !userDoc.exists();
+
+  if (isNewUser) {
+    // Create user document WITHOUT termsAcceptedAt — terms accepted via modal + API
     await createUserDocument(result.user);
+    // Send welcome email for new users (non-blocking)
+    triggerWelcomeEmail().catch(() => {});
   }
 
-  return result.user;
+  return { user: result.user, isNewUser };
 }
 
 export async function signOut() {
@@ -66,7 +81,6 @@ async function createUserDocument(
   const userDoc: Omit<User, 'id'> = {
     email: firebaseUser.email!,
     displayName: displayName || firebaseUser.displayName,
-    photoURL: firebaseUser.photoURL,
     createdAt: new Date(),
     updatedAt: new Date(),
     plan: 'free',
@@ -94,6 +108,47 @@ export async function getUserData(userId: string): Promise<User | null> {
     createdAt: data.createdAt?.toDate(),
     updatedAt: data.updatedAt?.toDate(),
   } as User;
+}
+
+// ============ PROFILE MANAGEMENT ============
+
+export async function updateUserProfile(
+  displayName: string
+): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('Non authentifié');
+
+  // Update Firebase Auth profile
+  await updateProfile(currentUser, { displayName });
+
+  // Update Firestore user doc
+  await updateDoc(doc(db, 'users', currentUser.uid), {
+    displayName,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function resetPassword(email: string): Promise<void> {
+  await sendPasswordResetEmail(auth, email);
+}
+
+export async function deleteCurrentUser(): Promise<void> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('Non authentifié');
+
+  // Delete Firestore user document
+  await deleteDoc(doc(db, 'users', currentUser.uid));
+
+  // Delete Firebase Auth account
+  await deleteUser(currentUser);
+}
+
+async function triggerWelcomeEmail() {
+  try {
+    await fetch('/api/auth/welcome-email', { method: 'POST' });
+  } catch {
+    // Silently ignore — email is best-effort
+  }
 }
 
 export { auth };

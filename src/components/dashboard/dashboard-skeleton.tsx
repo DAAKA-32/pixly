@@ -261,24 +261,4 @@ export function DashboardSkeleton() {
   );
 }
 
-// Compact loading indicator for transitions
-export function DashboardLoadingOverlay() {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-50/80 backdrop-blur-sm"
-    >
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative">
-          <div className="h-12 w-12 rounded-full border-4 border-primary-100" />
-          <div className="absolute inset-0 h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-        </div>
-        <p className="text-sm font-medium text-neutral-600">Chargement du dashboard...</p>
-      </div>
-    </motion.div>
-  );
-}
-
 export { MetricCardSkeleton, ChartSkeleton, TableSkeleton, SidebarSkeleton, MobileHeaderSkeleton };

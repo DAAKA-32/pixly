@@ -34,7 +34,7 @@ const statusSizeClasses = {
 };
 
 const statusColors = {
-  online: 'bg-green-500',
+  online: 'bg-emerald-500',
   offline: 'bg-neutral-400',
   away: 'bg-amber-500',
 };
@@ -146,10 +146,11 @@ const EditableAvatar = forwardRef<HTMLDivElement, EditableAvatarProps>(
             onClick={onEdit}
             className={cn(
               'absolute inset-0 flex items-center justify-center rounded-full',
-              'bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity',
+              'bg-black/50 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity',
               'text-white cursor-pointer'
             )}
             type="button"
+            aria-label="Modifier l'avatar"
           >
             {editIcon || (
               <svg

@@ -4,6 +4,8 @@ import { fetchMetaCampaigns } from '@/lib/integrations/meta-ads';
 import { fetchGoogleCampaigns } from '@/lib/integrations/google-ads-reporting';
 import { fetchTikTokCampaigns } from '@/lib/integrations/tiktok-ads-reporting';
 import type { CampaignMetrics, Channel } from '@/types';
+import { cookies } from 'next/headers';
+import { verifySession, verifyWorkspaceAccess } from '@/lib/auth/verify-session';
 
 // ===========================================
 // PIXLY - Ad Data API Route
@@ -29,6 +31,17 @@ export async function GET(request: NextRequest) {
       { error: 'workspaceId is required' },
       { status: 400 }
     );
+  }
+
+  // Verify authentication
+  const cookieStore = await cookies();
+  const session = await verifySession(cookieStore.get('pixly_session')?.value);
+  if (!session) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+  }
+  const hasAccess = await verifyWorkspaceAccess(session.uid, workspaceId);
+  if (!hasAccess) {
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 });
   }
 
   const dateRange = getDateRange(period);

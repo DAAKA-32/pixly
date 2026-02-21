@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
 import { getPlanByStripePriceId, isAnnualPrice } from '@/lib/stripe/config';
+import { sendTrialEndingEmail, sendPaymentFailedEmail } from '@/lib/email/resend';
 import Stripe from 'stripe';
 
 // ===========================================
@@ -326,6 +327,11 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
     read: false,
     createdAt: new Date(),
   });
+
+  // Send trial ending email
+  if (userData.email) {
+    sendTrialEndingEmail(userData.email, userData.displayName || 'there', 3).catch(console.error);
+  }
 }
 
 // ===========================================
@@ -457,6 +463,11 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     read: false,
     createdAt: new Date(),
   });
+
+  // Send payment failed email
+  if (userData.email) {
+    sendPaymentFailedEmail(userData.email, userData.displayName || 'there').catch(console.error);
+  }
 }
 
 // ===========================================

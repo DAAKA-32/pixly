@@ -4,6 +4,7 @@ import { ReactNode, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { cn, formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface MetricCardProps {
   title: string;
@@ -15,8 +16,8 @@ interface MetricCardProps {
   trend?: 'up' | 'down' | 'neutral';
   className?: string;
   description?: string;
+  tooltip?: string | ReactNode;
   isLoading?: boolean;
-  accent?: string;
 }
 
 export function MetricCard({
@@ -29,8 +30,8 @@ export function MetricCard({
   trend,
   className,
   description,
+  tooltip,
   isLoading = false,
-  accent,
 }: MetricCardProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -71,9 +72,8 @@ export function MetricCard({
         className={cn('relative overflow-hidden rounded-2xl border border-neutral-200/80 bg-white p-5', className)}
       >
         <div className="space-y-4">
-          <div className="h-3.5 w-20 animate-pulse rounded-md bg-neutral-100" />
-          <div className="h-8 w-28 animate-pulse rounded-md bg-neutral-100" />
-          <div className="h-3 w-16 animate-pulse rounded-md bg-neutral-50" />
+          <div className="h-3.5 w-24 animate-pulse rounded-md bg-neutral-100" />
+          <div className="h-9 w-32 animate-pulse rounded-md bg-neutral-100" />
         </div>
       </Wrapper>
     );
@@ -88,25 +88,18 @@ export function MetricCard({
         className
       )}
     >
-      {/* Subtle top accent line */}
-      {accent && (
-        <div
-          className="absolute inset-x-0 top-0 h-[2px]"
-          style={{ backgroundColor: accent }}
-        />
-      )}
-
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-[13px] font-medium tracking-wide text-neutral-500">{title}</p>
+      <div className="flex items-center gap-1.5">
         {icon && (
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-50 text-neutral-400 transition-colors group-hover:bg-neutral-100 group-hover:text-neutral-500">
-            {icon}
-          </div>
+          <span className="text-neutral-400">{icon}</span>
+        )}
+        <p className="text-[13px] font-medium tracking-wide text-neutral-500">{title}</p>
+        {tooltip && (
+          <Tooltip content={tooltip} showIcon />
         )}
       </div>
 
       <div className="mt-3">
-        <p className="text-[28px] font-semibold leading-none tracking-tight text-neutral-900">
+        <p className="font-serif text-[24px] sm:text-[28px] lg:text-[32px] leading-none tracking-tight text-neutral-900">
           {formattedValue}
         </p>
 
@@ -115,7 +108,7 @@ export function MetricCard({
         )}
 
         {change !== null && (
-          <div className="mt-3 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-1.5">
             <span
               className={cn(
                 'inline-flex items-center gap-0.5 text-[12px] font-semibold tabular-nums',
@@ -133,7 +126,6 @@ export function MetricCard({
               )}
               {formatPercent(Math.abs(change))}
             </span>
-            <span className="text-[11px] text-neutral-400">vs préc.</span>
           </div>
         )}
       </div>
@@ -141,17 +133,37 @@ export function MetricCard({
   );
 }
 
+interface MetricCardMiniProps {
+  title: string;
+  value: number;
+  previousValue?: number;
+  format?: 'number' | 'currency' | 'percent' | 'roas';
+  currency?: string;
+  icon?: ReactNode;
+  trend?: 'up' | 'down' | 'neutral';
+  className?: string;
+  tooltip?: string | ReactNode;
+  isLoading?: boolean;
+}
+
 export function MetricCardMini({
   title,
   value,
+  previousValue,
   format = 'number',
-  currency = 'USD',
-}: {
-  title: string;
-  value: number;
-  format?: 'number' | 'currency' | 'percent' | 'roas';
-  currency?: string;
-}) {
+  currency = 'EUR',
+  icon,
+  trend,
+  className,
+  tooltip,
+  isLoading = false,
+}: MetricCardMiniProps) {
+  const change = previousValue
+    ? ((value - previousValue) / previousValue) * 100
+    : null;
+
+  const actualTrend = trend || (change ? (change > 0 ? 'up' : change < 0 ? 'down' : 'neutral') : 'neutral');
+
   const formattedValue = (() => {
     switch (format) {
       case 'currency':
@@ -165,10 +177,52 @@ export function MetricCardMini({
     }
   })();
 
+  if (isLoading) {
+    return (
+      <div className={cn('rounded-xl border border-neutral-200/80 bg-white px-5 py-3.5', className)}>
+        <div className="h-3 w-16 animate-pulse rounded bg-neutral-100" />
+        <div className="mt-2 h-5 w-24 animate-pulse rounded bg-neutral-100" />
+      </div>
+    );
+  }
+
   return (
-    <div className="rounded-xl border border-neutral-200/80 bg-white p-3.5">
-      <p className="text-[11px] font-medium text-neutral-500">{title}</p>
-      <p className="mt-1 text-lg font-semibold tabular-nums text-neutral-900">{formattedValue}</p>
+    <div className={cn(
+      'group rounded-xl border border-neutral-200/80 bg-white px-5 py-3.5',
+      'transition-all duration-300 hover:border-neutral-300 hover:shadow-soft',
+      className
+    )}>
+      <div className="flex items-center gap-1.5">
+        {icon && (
+          <span className="text-neutral-400">{icon}</span>
+        )}
+        <p className="text-[11px] font-medium text-neutral-500">{title}</p>
+        {tooltip && (
+          <Tooltip content={tooltip} showIcon />
+        )}
+      </div>
+      <div className="mt-1 flex items-baseline gap-2">
+        <p className="font-serif text-xl leading-none text-neutral-900">{formattedValue}</p>
+        {change !== null && (
+          <span
+            className={cn(
+              'inline-flex items-center gap-0.5 text-[11px] font-semibold tabular-nums',
+              actualTrend === 'up' && 'text-emerald-600',
+              actualTrend === 'down' && 'text-red-500',
+              actualTrend === 'neutral' && 'text-neutral-400'
+            )}
+          >
+            {actualTrend === 'up' ? (
+              <TrendingUp className="h-2.5 w-2.5" />
+            ) : actualTrend === 'down' ? (
+              <TrendingDown className="h-2.5 w-2.5" />
+            ) : (
+              <Minus className="h-2.5 w-2.5" />
+            )}
+            {formatPercent(Math.abs(change))}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

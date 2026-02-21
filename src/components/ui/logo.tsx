@@ -49,7 +49,7 @@ export function Logo({
         )}
       >
         <Image
-          src="/logo.jpg"
+          src="/logo-pixly.png"
           alt="Pixly"
           width={image}
           height={image}
@@ -102,7 +102,7 @@ export function LogoIcon({
       )}
     >
       <Image
-        src="/logo.jpg"
+        src="/logo-pixly.png"
         alt="Pixly"
         width={image}
         height={image}

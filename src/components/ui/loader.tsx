@@ -1,6 +1,5 @@
 'use client';
 
-import { forwardRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { LogoIcon } from './logo';
@@ -67,19 +66,16 @@ const dotColors = {
 
 export function DotsLoader({ size = 'md', color = 'primary', className }: DotsLoaderProps) {
   return (
-    <div className={cn('flex items-center gap-1', className)} role="status" aria-label="Loading">
+    <div className={cn('flex items-center gap-1', className)} role="status" aria-label="Chargement">
       {[0, 1, 2].map((i) => (
         <motion.div
           key={i}
           className={cn('rounded-full', dotSizes[size], dotColors[color])}
-          animate={{
-            y: [-2, 2, -2],
-            opacity: [0.5, 1, 0.5],
-          }}
+          animate={{ opacity: [0.3, 1, 0.3] }}
           transition={{
-            duration: 0.8,
+            duration: 1.2,
             repeat: Infinity,
-            delay: i * 0.15,
+            delay: i * 0.2,
             ease: 'easeInOut',
           }}
         />
@@ -102,22 +98,8 @@ const pulseSizes = {
 
 export function PulseLoader({ size = 'md', className }: PulseLoaderProps) {
   return (
-    <div className={cn('relative', pulseSizes[size], className)} role="status" aria-label="Loading">
-      <motion.div
-        className="absolute inset-0 rounded-full bg-primary-500"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.1, 0.3],
-        }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
-      <div className="absolute inset-0 flex items-center justify-center">
-        <Spinner size={size === 'sm' ? 'sm' : size === 'md' ? 'md' : 'lg'} />
-      </div>
+    <div className={cn('flex items-center justify-center', pulseSizes[size], className)} role="status" aria-label="Chargement">
+      <Spinner size={size === 'sm' ? 'sm' : size === 'md' ? 'md' : 'lg'} />
     </div>
   );
 }
@@ -133,50 +115,21 @@ export function LogoLoader({ size = 'md', text, className }: LogoLoaderProps) {
   const logoSize = size === 'sm' ? 'sm' : size === 'md' ? 'md' : 'lg';
 
   return (
-    <div className={cn('flex flex-col items-center gap-4', className)} role="status" aria-label="Loading">
+    <div className={cn('flex flex-col items-center gap-4', className)} role="status" aria-label="Chargement">
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="relative">
-          <motion.div
-            className="absolute inset-0 rounded-xl bg-primary-500"
-            animate={{
-              scale: [1, 1.15, 1],
-              opacity: [0.2, 0.1, 0.2],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: 'easeInOut',
-            }}
-          />
-          <LogoIcon size={logoSize} className="relative" />
-        </div>
+        <LogoIcon size={logoSize} />
       </motion.div>
 
       {text && (
-        <motion.p
-          initial={{ opacity: 0, y: 5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-sm font-medium text-neutral-600"
-        >
-          {text}
-        </motion.p>
+        <p className="text-sm font-medium text-neutral-500">{text}</p>
       )}
 
-      <div className="h-1 w-32 overflow-hidden rounded-full bg-neutral-100">
-        <motion.div
-          className="h-full w-1/3 rounded-full bg-gradient-to-r from-primary-400 via-primary-500 to-primary-400"
-          animate={{ x: ['-100%', '400%'] }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
+      <div className="h-0.5 w-24 overflow-hidden rounded-full bg-neutral-100">
+        <div className="h-full w-full animate-loading-bar rounded-full bg-primary-400" />
       </div>
     </div>
   );
@@ -208,22 +161,12 @@ export function ContentLoader({
   return (
     <div
       className={cn(
-        'relative overflow-hidden bg-neutral-200/70',
+        'animate-pulse bg-neutral-200/70',
         roundedClasses[rounded],
         className
       )}
       style={{ width, height }}
-    >
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
-        animate={{ x: ['-100%', '100%'] }}
-        transition={{
-          duration: 1.5,
-          repeat: Infinity,
-          ease: 'linear',
-        }}
-      />
-    </div>
+    />
   );
 }
 

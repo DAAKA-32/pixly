@@ -1,7 +1,7 @@
 {
-  "name": "Pixly - Marketing Attribution Platform",
+  "name": "Pixly — Plateforme d'Attribution Marketing",
   "short_name": "Pixly",
-  "description": "Track, attribute, and optimize your marketing spend with precision.",
+  "description": "Suivez, attribuez et optimisez vos dépenses publicitaires avec précision grâce à l'attribution multi-touch.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -9,9 +9,9 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/logo.jpg",
-      "sizes": "1080x1080",
-      "type": "image/jpeg",
+      "src": "/logo-pixly.png",
+      "sizes": "940x788",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]

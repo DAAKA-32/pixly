@@ -13,6 +13,7 @@ import type {
   ChannelMetrics,
   Channel,
   Conversion,
+  GeoMetrics,
 } from '@/types';
 
 // ===========================================
@@ -89,6 +90,35 @@ export function getDateRange(period: '7d' | '30d' | '90d' | 'custom', customRang
   }
 
   return { start, end };
+}
+
+/**
+ * Get previous period date range for period-over-period comparison.
+ * For '7d', the previous period is 7-14 days ago.
+ * For '30d', the previous period is 30-60 days ago.
+ * For '90d', the previous period is 90-180 days ago.
+ */
+export function getPreviousDateRange(period: '7d' | '30d' | '90d'): DateRange {
+  const currentRange = getDateRange(period);
+  const durationMs = currentRange.end.getTime() - currentRange.start.getTime();
+  return {
+    start: new Date(currentRange.start.getTime() - durationMs),
+    end: new Date(currentRange.start.getTime() - 1), // 1ms before current period start
+  };
+}
+
+/**
+ * Fetch overview metrics for a previous period (lightweight — conversions only, no full dashboard).
+ * Used for period-over-period comparison on KPI cards.
+ */
+export async function fetchPreviousOverview(
+  workspaceId: string,
+  period: '7d' | '30d' | '90d',
+  adSpend: Record<Channel, number> = emptyAdSpend
+): Promise<OverviewMetrics> {
+  const dateRange = getPreviousDateRange(period);
+  const conversions = await fetchConversions(workspaceId, dateRange);
+  return calculateOverviewMetrics(conversions, adSpend);
 }
 
 /**
@@ -331,6 +361,93 @@ export function calculateRevenueByDay(
 }
 
 /**
+ * Fetch events with geolocation data for geographic metrics
+ */
+export async function fetchEventsWithGeo(
+  workspaceId: string,
+  dateRange: DateRange
+): Promise<Array<{ countryCode: string | null; countryName: string | null }>> {
+  const eventsRef = collection(db, 'events');
+  const q = query(
+    eventsRef,
+    where('workspaceId', '==', workspaceId),
+    where('timestamp', '>=', Timestamp.fromDate(dateRange.start)),
+    where('timestamp', '<=', Timestamp.fromDate(dateRange.end))
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      countryCode: data.context?.countryCode || null,
+      countryName: data.context?.country || null,
+    };
+  });
+}
+
+/**
+ * Calculate metrics by country
+ */
+export function calculateGeoMetrics(
+  conversions: RawConversion[],
+  events: Array<{ countryCode: string | null; countryName: string | null }>,
+  adSpend: Record<Channel, number> = emptyAdSpend
+): GeoMetrics[] {
+  const countryMap = new Map<string, {
+    countryName: string;
+    conversions: number;
+    revenue: number;
+    visitors: number;
+  }>();
+
+  // Count visitors by country from events
+  for (const event of events) {
+    if (!event.countryCode || !event.countryName) continue;
+    const existing = countryMap.get(event.countryCode) || {
+      countryName: event.countryName,
+      conversions: 0,
+      revenue: 0,
+      visitors: 0,
+    };
+    existing.visitors += 1;
+    countryMap.set(event.countryCode, existing);
+  }
+
+  // Note: In a real implementation, you'd need to fetch conversion events
+  // with geo data. For now, we'll distribute conversions proportionally
+  // This is a simplified version - in production, you'd want to store
+  // countryCode on the conversion document itself
+  const totalVisitors = events.length;
+  const totalRevenue = conversions
+    .filter(c => c.type === 'purchase')
+    .reduce((sum, c) => sum + (c.value || 0), 0);
+  const totalConversions = conversions.length;
+  const totalSpend = Object.values(adSpend).reduce((sum, v) => sum + v, 0);
+
+  return Array.from(countryMap.entries())
+    .map(([countryCode, data]) => {
+      const visitorRatio = totalVisitors > 0 ? data.visitors / totalVisitors : 0;
+      const estimatedConversions = Math.round(totalConversions * visitorRatio);
+      const estimatedRevenue = totalRevenue * visitorRatio;
+      const estimatedSpend = totalSpend * visitorRatio;
+      const conversionRate = data.visitors > 0 ? (estimatedConversions / data.visitors) * 100 : 0;
+      const roas = estimatedSpend > 0 ? estimatedRevenue / estimatedSpend : 0;
+
+      return {
+        countryCode,
+        countryName: data.countryName,
+        conversions: estimatedConversions,
+        revenue: estimatedRevenue,
+        visitors: data.visitors,
+        conversionRate,
+        roas,
+      };
+    })
+    .filter(c => c.visitors > 0) // Only include countries with visitors
+    .sort((a, b) => b.conversions - a.conversions); // Sort by conversions
+}
+
+/**
  * Get full dashboard metrics
  */
 export async function getDashboardMetrics(
@@ -340,15 +457,17 @@ export async function getDashboardMetrics(
 ): Promise<DashboardMetrics> {
   const dateRange = getDateRange(period);
 
-  const [events, conversions] = await Promise.all([
+  const [events, conversions, geoEvents] = await Promise.all([
     fetchEvents(workspaceId, dateRange),
     fetchConversions(workspaceId, dateRange),
+    fetchEventsWithGeo(workspaceId, dateRange),
   ]);
 
   const overview = calculateOverviewMetrics(conversions, adSpend);
   const byChannel = calculateChannelMetrics(conversions, events, adSpend);
   const byCampaign = calculateCampaignMetrics(conversions);
   const revenueByDay = calculateRevenueByDay(conversions, dateRange);
+  const byCountry = calculateGeoMetrics(conversions, geoEvents, adSpend);
 
   // Format conversions for display
   const formattedConversions: Conversion[] = conversions.slice(0, 50).map((c) => ({
@@ -415,6 +534,7 @@ export async function getDashboardMetrics(
     })),
     conversions: formattedConversions,
     revenueByDay,
+    byCountry,
   };
 }
 

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
+import { cookies } from 'next/headers';
+import { verifySession, verifyWorkspaceAccess } from '@/lib/auth/verify-session';
 
 // ===========================================
 // PIXLY - Integration Disconnect API
@@ -17,7 +19,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validIntegrations = ['meta', 'google', 'stripe', 'shopify'];
+    // Verify authentication
+    const cookieStore = await cookies();
+    const session = await verifySession(cookieStore.get('pixly_session')?.value);
+    if (!session) {
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+    }
+    const hasAccess = await verifyWorkspaceAccess(session.uid, workspaceId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 });
+    }
+
+    const validIntegrations = ['meta', 'google', 'tiktok', 'stripe', 'shopify', 'hubspot'];
     if (!validIntegrations.includes(integrationId)) {
       return NextResponse.json(
         { error: 'Invalid integration ID' },

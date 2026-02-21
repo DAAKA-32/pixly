@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Download, FileText, FileSpreadsheet, ChevronDown } from 'lucide-react';
 import {
   exportCampaignsCSV,
@@ -24,6 +24,19 @@ interface ExportButtonsProps {
 
 export function ExportButtons({ metrics, periodLabel, isLoading }: ExportButtonsProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
 
   const handleExport = useCallback(
     (type: 'csv_campaigns' | 'csv_overview' | 'csv_conversions' | 'csv_full' | 'pdf') => {
@@ -72,7 +85,7 @@ export function ExportButtons({ metrics, periodLabel, isLoading }: ExportButtons
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full z-20 mt-1.5 w-56 rounded-xl border border-neutral-200 bg-white py-1.5 shadow-lg">
+          <div className="absolute right-0 top-full z-20 mt-1.5 w-[calc(100vw-2rem)] sm:w-56 max-w-[14rem] rounded-xl border border-neutral-200 bg-white py-1.5 shadow-lg">
             <div className="px-3 py-1.5">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
                 CSV
@@ -82,28 +95,28 @@ export function ExportButtons({ metrics, periodLabel, isLoading }: ExportButtons
               onClick={() => handleExport('csv_full')}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50"
             >
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
               Rapport complet
             </button>
             <button
               onClick={() => handleExport('csv_campaigns')}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50"
             >
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
               Campagnes
             </button>
             <button
               onClick={() => handleExport('csv_overview')}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50"
             >
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
               Vue d&apos;ensemble
             </button>
             <button
               onClick={() => handleExport('csv_conversions')}
               className="flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50"
             >
-              <FileSpreadsheet className="h-4 w-4 text-green-600" />
+              <FileSpreadsheet className="h-4 w-4 text-emerald-600" />
               Conversions
             </button>
 

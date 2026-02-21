@@ -1,12 +1,13 @@
 import { adminDb } from '@/lib/firebase/admin';
 import type { IntegrationState } from '@/types';
+import { decryptToken, encryptToken } from '@/lib/crypto/tokens';
 
 // ===========================================
 // PIXLY - Token Manager
 // Handles OAuth token refresh for integrations
 // ===========================================
 
-export type IntegrationType = 'meta' | 'google' | 'tiktok' | 'stripe' | 'shopify';
+export type IntegrationType = 'meta' | 'google' | 'tiktok' | 'stripe' | 'shopify' | 'hubspot';
 
 const TOKEN_REFRESH_BUFFER = 5 * 60 * 1000; // 5 minutes before expiry
 
@@ -40,7 +41,7 @@ export async function getValidToken(
   const isExpired = expiryTime > 0 && Date.now() + TOKEN_REFRESH_BUFFER >= expiryTime;
 
   if (!isExpired) {
-    return integrationState.accessToken;
+    return decryptToken(integrationState.accessToken);
   }
 
   // Token is expired or about to expire - refresh it
@@ -64,6 +65,8 @@ async function refreshToken(
         return await refreshMetaToken(workspaceId, state);
       case 'tiktok':
         return await refreshTikTokToken(workspaceId, state);
+      case 'hubspot':
+        return await refreshHubSpotToken(workspaceId, state);
       default:
         return null;
     }
@@ -97,7 +100,7 @@ async function refreshGoogleToken(
     body: new URLSearchParams({
       client_id: process.env.GOOGLE_ADS_CLIENT_ID!,
       client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET!,
-      refresh_token: state.refreshToken,
+      refresh_token: decryptToken(state.refreshToken!),
       grant_type: 'refresh_token',
     }),
   });
@@ -113,7 +116,7 @@ async function refreshGoogleToken(
   const newExpiresAt = new Date(Date.now() + data.expires_in * 1000);
 
   await adminDb.collection('workspaces').doc(workspaceId).update({
-    'integrations.google.accessToken': data.access_token,
+    'integrations.google.accessToken': encryptToken(data.access_token),
     'integrations.google.expiresAt': newExpiresAt,
   });
 
@@ -135,7 +138,7 @@ async function refreshMetaToken(
     grant_type: 'fb_exchange_token',
     client_id: process.env.META_APP_ID!,
     client_secret: process.env.META_APP_SECRET!,
-    fb_exchange_token: state.accessToken,
+    fb_exchange_token: decryptToken(state.accessToken!),
   });
 
   const response = await fetch(
@@ -152,7 +155,7 @@ async function refreshMetaToken(
   const newExpiresAt = new Date(Date.now() + (data.expires_in || 5184000) * 1000);
 
   await adminDb.collection('workspaces').doc(workspaceId).update({
-    'integrations.meta.accessToken': data.access_token,
+    'integrations.meta.accessToken': encryptToken(data.access_token),
     'integrations.meta.expiresAt': newExpiresAt,
   });
 
@@ -180,7 +183,7 @@ async function refreshTikTokToken(
       body: JSON.stringify({
         app_id: process.env.TIKTOK_APP_ID,
         secret: process.env.TIKTOK_APP_SECRET,
-        refresh_token: state.refreshToken,
+        refresh_token: decryptToken(state.refreshToken!),
       }),
     }
   );
@@ -196,12 +199,54 @@ async function refreshTikTokToken(
   const newExpiresAt = new Date(Date.now() + (result.data.expires_in || 86400) * 1000);
 
   await adminDb.collection('workspaces').doc(workspaceId).update({
-    'integrations.tiktok.accessToken': result.data.access_token,
-    'integrations.tiktok.refreshToken': result.data.refresh_token,
+    'integrations.tiktok.accessToken': encryptToken(result.data.access_token),
+    'integrations.tiktok.refreshToken': encryptToken(result.data.refresh_token),
     'integrations.tiktok.expiresAt': newExpiresAt,
   });
 
   return result.data.access_token;
+}
+
+/**
+ * Refresh HubSpot access token using refresh_token
+ * HubSpot tokens expire after 6 hours
+ */
+async function refreshHubSpotToken(
+  workspaceId: string,
+  state: IntegrationState
+): Promise<string | null> {
+  if (!state.refreshToken) {
+    console.error('No refresh token available for HubSpot');
+    return null;
+  }
+
+  const response = await fetch('https://api.hubapi.com/oauth/v1/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'refresh_token',
+      client_id: process.env.HUBSPOT_CLIENT_ID!,
+      client_secret: process.env.HUBSPOT_CLIENT_SECRET!,
+      refresh_token: decryptToken(state.refreshToken),
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!data.access_token) {
+    console.error('HubSpot token refresh failed:', data.message || data.error);
+    return null;
+  }
+
+  const newExpiresAt = new Date(Date.now() + (data.expires_in || 21600) * 1000);
+
+  await adminDb.collection('workspaces').doc(workspaceId).update({
+    'integrations.hubspot.accessToken': encryptToken(data.access_token),
+    'integrations.hubspot.refreshToken': data.refresh_token ? encryptToken(data.refresh_token) : state.refreshToken,
+    'integrations.hubspot.expiresAt': newExpiresAt,
+  });
+
+  return data.access_token;
 }
 
 /**

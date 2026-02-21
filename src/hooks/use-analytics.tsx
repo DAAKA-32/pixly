@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useWorkspace } from './use-workspace';
 import {
   getDashboardMetrics,
   getDateRange,
+  fetchPreviousOverview,
   type DateRange,
 } from '@/lib/analytics/metrics';
-import type { DashboardMetrics, Channel, CampaignMetrics } from '@/types';
+import { generateDemoMetrics, generateDemoPreviousMetrics } from '@/lib/demo/data';
+import type { DashboardMetrics, OverviewMetrics, Channel, CampaignMetrics } from '@/types';
 
 // ===========================================
 // PIXLY - Analytics Hook
@@ -26,6 +29,7 @@ interface UseAnalyticsOptions {
 
 interface UseAnalyticsReturn {
   metrics: DashboardMetrics | null;
+  previousMetrics: OverviewMetrics | null;
   isLoading: boolean;
   isFetching: boolean;
   isDemo: boolean;
@@ -34,10 +38,12 @@ interface UseAnalyticsReturn {
   setPeriod: (period: Period) => void;
   dateRange: DateRange;
   refresh: () => Promise<void>;
+  lastUpdatedAt: number | null;
 }
 
 interface QueryResult {
   metrics: DashboardMetrics;
+  previousOverview: OverviewMetrics | null;
   isDemo: boolean;
 }
 
@@ -166,23 +172,44 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
   } = options;
 
   const { currentWorkspace } = useWorkspace();
+  const searchParams = useSearchParams();
   const [period, setPeriod] = useState<Period>(initialPeriod);
   const queryClient = useQueryClient();
 
   const dateRange = useMemo(() => getDateRange(period), [period]);
 
-  // React Query for metrics fetching with smart caching
+  // Demo mode: activated when no workspace is selected OR ?demo=true URL param
+  const isDemoMode = !currentWorkspace?.id || searchParams.get('demo') === 'true';
+
+  // Demo data query — instant, no network requests
+  const {
+    data: demoResult,
+  } = useQuery<QueryResult>({
+    queryKey: ['dashboard-metrics-demo', period],
+    queryFn: (): QueryResult => {
+      const metrics = generateDemoMetrics(period);
+      const previousOverview = generateDemoPreviousMetrics(period);
+      return { metrics, previousOverview, isDemo: true };
+    },
+    enabled: isDemoMode,
+    staleTime: Infinity, // Demo data never goes stale
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+
+  // React Query for real metrics fetching with smart caching
   const {
     data: queryResult,
     isLoading,
     isFetching,
     error,
     refetch,
+    dataUpdatedAt,
   } = useQuery<QueryResult>({
     queryKey: ['dashboard-metrics', currentWorkspace?.id, period],
     queryFn: async (): Promise<QueryResult> => {
       if (!currentWorkspace?.id) {
-        return { metrics: defaultMetrics, isDemo: false };
+        return { metrics: defaultMetrics, previousOverview: null, isDemo: false };
       }
 
       // Fetch ad platform data if integrations are connected
@@ -197,8 +224,11 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
       // Use real ad spend if available
       const adSpend = adData?.adSpend || defaultAdSpend;
 
-      // Get Firestore metrics with real ad spend
-      const result = await getDashboardMetrics(currentWorkspace.id, period, adSpend);
+      // Fetch current metrics and previous period overview in parallel
+      const [result, previousOverview] = await Promise.all([
+        getDashboardMetrics(currentWorkspace.id, period, adSpend),
+        fetchPreviousOverview(currentWorkspace.id, period, adSpend).catch(() => null),
+      ]);
 
       // Merge ad platform campaigns with Firestore campaigns
       if (adData) {
@@ -217,9 +247,9 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
         }
       }
 
-      return { metrics: result, isDemo: false };
+      return { metrics: result, previousOverview, isDemo: false };
     },
-    enabled: !!currentWorkspace?.id,
+    enabled: !!currentWorkspace?.id && !isDemoMode,
     staleTime: 2 * 60 * 1000, // 2 minutes - data stays fresh
     gcTime: 10 * 60 * 1000, // 10 minutes - cache duration (was cacheTime in v4)
     refetchInterval: autoRefresh ? refreshInterval : false,
@@ -231,6 +261,24 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
 
   // Prefetch adjacent periods for instant switching
   useEffect(() => {
+    if (isDemoMode) {
+      // Prefetch demo data for adjacent periods (instant)
+      const periods: Period[] = ['7d', '30d', '90d'];
+      const adjacentPeriods = periods.filter((p) => p !== period);
+      adjacentPeriods.forEach((p) => {
+        queryClient.prefetchQuery({
+          queryKey: ['dashboard-metrics-demo', p],
+          queryFn: (): QueryResult => ({
+            metrics: generateDemoMetrics(p),
+            previousOverview: generateDemoPreviousMetrics(p),
+            isDemo: true,
+          }),
+          staleTime: Infinity,
+        });
+      });
+      return;
+    }
+
     if (!currentWorkspace?.id) return;
 
     const periods: Period[] = ['7d', '30d', '90d'];
@@ -246,36 +294,46 @@ export function useAnalytics(options: UseAnalyticsOptions = {}): UseAnalyticsRet
             : null;
           const adSpend = adData?.adSpend || defaultAdSpend;
 
-          const result = await getDashboardMetrics(currentWorkspace.id, p, adSpend);
+          const [result, previousOverview] = await Promise.all([
+            getDashboardMetrics(currentWorkspace.id, p, adSpend),
+            fetchPreviousOverview(currentWorkspace.id, p, adSpend).catch(() => null),
+          ]);
 
           if (adData) {
             result.byCampaign = mergeCampaigns(result.byCampaign, adData.campaigns);
           }
 
-          return { metrics: result, isDemo: false };
+          return { metrics: result, previousOverview, isDemo: false };
         },
         staleTime: 5 * 60 * 1000,
       });
     });
-  }, [currentWorkspace?.id, period, queryClient]);
+  }, [currentWorkspace?.id, period, queryClient, isDemoMode]);
 
   const refresh = useCallback(async () => {
-    await refetch();
-  }, [refetch]);
+    if (!isDemoMode) {
+      await refetch();
+    }
+  }, [refetch, isDemoMode]);
 
-  const metrics = queryResult?.metrics ?? defaultMetrics;
-  const isDemo = queryResult?.isDemo ?? false;
+  // Use demo data when in demo mode, otherwise use real data
+  const activeResult = isDemoMode ? demoResult : queryResult;
+  const metrics = activeResult?.metrics ?? defaultMetrics;
+  const previousMetrics = activeResult?.previousOverview ?? null;
+  const isDemo = activeResult?.isDemo ?? isDemoMode;
 
   return {
     metrics,
-    isLoading: isLoading && !queryResult,
-    isFetching,
+    previousMetrics,
+    isLoading: isDemoMode ? false : (isLoading && !queryResult),
+    isFetching: isDemoMode ? false : isFetching,
     isDemo,
-    error: error as Error | null,
+    error: isDemoMode ? null : (error as Error | null),
     period,
     setPeriod,
     dateRange,
     refresh,
+    lastUpdatedAt: isDemoMode ? Date.now() : (dataUpdatedAt || null),
   };
 }
 

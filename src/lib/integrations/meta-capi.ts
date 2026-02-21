@@ -1,8 +1,30 @@
-import type { Conversion } from '@/types';
+import crypto from 'crypto';
 
 // ===========================================
 // PIXLY - Meta Conversions API Integration
 // ===========================================
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface MetaCAPIPayload {
+  pixelId: string;
+  accessToken: string;
+  eventName: string; // 'Purchase' | 'Lead'
+  eventTime: number; // Unix timestamp
+  userData: {
+    fbclid?: string;
+    hashedEmail?: string;
+    clientIpAddress?: string;
+    clientUserAgent?: string;
+  };
+  customData: {
+    value: number;
+    currency: string;
+  };
+  eventSourceUrl?: string;
+}
 
 interface MetaEventPayload {
   event_name: string;
@@ -10,18 +32,14 @@ interface MetaEventPayload {
   action_source: 'website';
   event_source_url?: string;
   user_data: {
-    em?: string[]; // Hashed email
-    ph?: string[]; // Hashed phone
+    em?: string;
+    fbc?: string;
     client_ip_address?: string;
     client_user_agent?: string;
-    fbc?: string; // Facebook click ID cookie
-    fbp?: string; // Facebook browser ID cookie
   };
-  custom_data?: {
-    currency?: string;
-    value?: number;
-    content_ids?: string[];
-    content_type?: string;
+  custom_data: {
+    value: number;
+    currency: string;
   };
 }
 
@@ -31,31 +49,92 @@ interface MetaAPIResponse {
   fbtrace_id: string;
 }
 
-export async function sendConversionToMeta(
-  conversion: Conversion,
-  pixelId: string,
-  accessToken: string
-): Promise<{ success: boolean; error?: string }> {
-  const apiVersion = 'v18.0';
-  const url = `https://graph.facebook.com/${apiVersion}/${pixelId}/events`;
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-  // Build event payload
+/**
+ * Hash a value with SHA-256 after normalizing (lowercase + trim).
+ * Returns the hex digest. Returns an empty string if the input is falsy.
+ */
+function hashSHA256(value: string): string {
+  if (!value) return '';
+  const normalized = value.toLowerCase().trim();
+  return crypto.createHash('sha256').update(normalized).digest('hex');
+}
+
+/**
+ * Format a raw fbclid into the fbc cookie format expected by Meta CAPI.
+ * Format: fb.1.{timestamp_ms}.{fbclid}
+ */
+function formatFbc(fbclid: string): string {
+  return `fb.1.${Date.now()}.${fbclid}`;
+}
+
+// ---------------------------------------------------------------------------
+// Main export
+// ---------------------------------------------------------------------------
+
+/**
+ * Send a single conversion event to Meta's Conversions API (CAPI).
+ *
+ * Endpoint: https://graph.facebook.com/v18.0/{pixelId}/events
+ *
+ * - Hashes email (if provided) with SHA-256 (normalized: lowercase + trim)
+ * - Converts raw fbclid to fbc format: fb.1.{timestamp}.{fbclid}
+ * - Returns a structured result with success flag and optional error message
+ */
+export async function sendConversionToMeta(
+  payload: MetaCAPIPayload
+): Promise<{ success: boolean; error?: string }> {
+  const {
+    pixelId,
+    accessToken,
+    eventName,
+    eventTime,
+    userData,
+    customData,
+    eventSourceUrl,
+  } = payload;
+
+  // Build user_data object
+  const userDataPayload: MetaEventPayload['user_data'] = {};
+
+  // Hash email if provided (normalize: lowercase, trim, then SHA-256)
+  if (userData.hashedEmail) {
+    userDataPayload.em = hashSHA256(userData.hashedEmail);
+  }
+
+  // Format fbclid as fbc parameter
+  if (userData.fbclid) {
+    userDataPayload.fbc = formatFbc(userData.fbclid);
+  }
+
+  if (userData.clientIpAddress) {
+    userDataPayload.client_ip_address = userData.clientIpAddress;
+  }
+
+  if (userData.clientUserAgent) {
+    userDataPayload.client_user_agent = userData.clientUserAgent;
+  }
+
+  // Build event payload following Meta CAPI spec
   const eventPayload: MetaEventPayload = {
-    event_name: conversion.type === 'purchase' ? 'Purchase' : 'Lead',
-    event_time: Math.floor(conversion.timestamp.getTime() / 1000),
+    event_name: eventName,
+    event_time: eventTime,
     action_source: 'website',
-    user_data: {},
+    user_data: userDataPayload,
     custom_data: {
-      currency: conversion.currency,
-      value: conversion.value,
+      value: customData.value,
+      currency: customData.currency,
     },
   };
 
-  // Add user data if available
-  const touchpoint = conversion.attribution?.touchpoints[0];
-  if (touchpoint?.clickId && touchpoint.channel === 'meta') {
-    eventPayload.user_data.fbc = `fb.1.${Date.now()}.${touchpoint.clickId}`;
+  if (eventSourceUrl) {
+    eventPayload.event_source_url = eventSourceUrl;
   }
+
+  const url = `https://graph.facebook.com/v18.0/${pixelId}/events`;
 
   try {
     const response = await fetch(url, {
@@ -69,6 +148,14 @@ export async function sendConversionToMeta(
       }),
     });
 
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      const errorMessage =
+        errorBody?.error?.message ||
+        `Meta CAPI responded with status ${response.status}`;
+      return { success: false, error: errorMessage };
+    }
+
     const result: MetaAPIResponse = await response.json();
 
     if (result.events_received > 0) {
@@ -77,74 +164,13 @@ export async function sendConversionToMeta(
 
     return {
       success: false,
-      error: result.messages?.join(', ') || 'No events received',
+      error: result.messages?.join(', ') || 'No events received by Meta',
     };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.message || 'Failed to send to Meta CAPI',
-    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Failed to send conversion to Meta CAPI';
+    return { success: false, error: message };
   }
-}
-
-export async function batchSendToMeta(
-  conversions: Conversion[],
-  pixelId: string,
-  accessToken: string
-): Promise<{ successCount: number; errorCount: number; errors: string[] }> {
-  const results = {
-    successCount: 0,
-    errorCount: 0,
-    errors: [] as string[],
-  };
-
-  // Meta CAPI supports batches of up to 1000 events
-  const batchSize = 1000;
-  const batches = [];
-
-  for (let i = 0; i < conversions.length; i += batchSize) {
-    batches.push(conversions.slice(i, i + batchSize));
-  }
-
-  for (const batch of batches) {
-    const events: MetaEventPayload[] = batch.map((conversion) => ({
-      event_name: conversion.type === 'purchase' ? 'Purchase' : 'Lead',
-      event_time: Math.floor(conversion.timestamp.getTime() / 1000),
-      action_source: 'website' as const,
-      user_data: {},
-      custom_data: {
-        currency: conversion.currency,
-        value: conversion.value,
-      },
-    }));
-
-    try {
-      const response = await fetch(
-        `https://graph.facebook.com/v18.0/${pixelId}/events`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            data: events,
-            access_token: accessToken,
-          }),
-        }
-      );
-
-      const result: MetaAPIResponse = await response.json();
-      results.successCount += result.events_received;
-      results.errorCount += batch.length - result.events_received;
-
-      if (result.messages) {
-        results.errors.push(...result.messages);
-      }
-    } catch (error: any) {
-      results.errorCount += batch.length;
-      results.errors.push(error.message);
-    }
-  }
-
-  return results;
 }

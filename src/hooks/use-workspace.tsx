@@ -14,8 +14,10 @@ import {
   getUserWorkspaces,
   createWorkspace as createWorkspaceDb,
   getWorkspace,
+  deleteWorkspaceById,
 } from '@/lib/firebase/firestore';
 import type { Workspace } from '@/types';
+import { canCreateWorkspace } from '@/lib/plans/features';
 
 // ===========================================
 // PIXLY - Workspace Hook
@@ -28,6 +30,7 @@ interface WorkspaceContextType {
   isLoading: boolean;
   selectWorkspace: (workspaceId: string) => Promise<void>;
   createWorkspace: (name: string) => Promise<Workspace>;
+  deleteWorkspace: (workspaceId: string) => Promise<void>;
   refreshWorkspaces: () => Promise<void>;
 }
 
@@ -185,6 +188,10 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
   const createWorkspace = useCallback(async (name: string): Promise<Workspace> => {
     if (!user) throw new Error('User not authenticated');
 
+    if (!canCreateWorkspace(user.plan, workspaces.length)) {
+      throw new Error('Limite de workspaces atteinte pour votre plan. Passez à un plan supérieur.');
+    }
+
     const workspace = await createWorkspaceDb(user.id, name);
     setWorkspaces((prev) => {
       const updated = [...prev, workspace];
@@ -195,7 +202,31 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(WORKSPACE_STORAGE_KEY, workspace.id);
 
     return workspace;
-  }, [user]);
+  }, [user, workspaces.length]);
+
+  const deleteWorkspace = useCallback(async (workspaceId: string) => {
+    if (!user) throw new Error('User not authenticated');
+
+    await deleteWorkspaceById(workspaceId, user.id);
+
+    setWorkspaces((prev) => {
+      const updated = prev.filter((w) => w.id !== workspaceId);
+      setCachedWorkspaces(updated);
+
+      // If deleted workspace was the current one, switch to first remaining
+      if (currentWorkspace?.id === workspaceId) {
+        const next = updated[0] || null;
+        setCurrentWorkspace(next);
+        if (next) {
+          localStorage.setItem(WORKSPACE_STORAGE_KEY, next.id);
+        } else {
+          localStorage.removeItem(WORKSPACE_STORAGE_KEY);
+        }
+      }
+
+      return updated;
+    });
+  }, [user, currentWorkspace]);
 
   const refreshWorkspaces = useCallback(async () => {
     if (!user) return;
@@ -214,6 +245,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         isLoading,
         selectWorkspace,
         createWorkspace,
+        deleteWorkspace,
         refreshWorkspaces,
       }}
     >

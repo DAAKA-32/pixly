@@ -1,7 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
-import { LogoLoader } from '@/components/ui/loader';
 import {
   SkeletonMetricCard,
   SkeletonChart,
@@ -15,7 +11,7 @@ import {
 
 function SidebarSkeleton() {
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-neutral-200 bg-white">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-neutral-200 bg-white hidden lg:block">
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-16 items-center gap-2 border-b border-neutral-200 px-6">
@@ -56,27 +52,34 @@ function SidebarSkeleton() {
   );
 }
 
+function MobileHeaderSkeleton() {
+  return (
+    <div className="fixed top-0 left-0 right-0 z-30 flex h-14 items-center border-b border-neutral-200 bg-white px-4 lg:hidden">
+      <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-200" />
+      <div className="flex flex-1 items-center justify-center gap-2">
+        <div className="h-7 w-7 animate-pulse rounded-xl bg-neutral-200" />
+        <div className="h-5 w-14 animate-pulse rounded bg-neutral-200" />
+      </div>
+      <div className="w-9" />
+    </div>
+  );
+}
+
 export default function DashboardLoading() {
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Sidebar Skeleton */}
       <SidebarSkeleton />
+      <MobileHeaderSkeleton />
 
-      {/* Main Content */}
-      <main className="ml-64 min-h-screen p-8">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-8"
-        >
+      <main className="min-h-screen px-4 pb-6 pt-20 lg:ml-64 lg:px-8 lg:pb-8 lg:pt-8">
+        <div className="space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <div className="h-7 w-32 animate-pulse rounded bg-neutral-200" />
               <div className="mt-2 h-4 w-64 animate-pulse rounded bg-neutral-200" />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-3">
               <div className="h-10 w-48 animate-pulse rounded-xl bg-neutral-200" />
               <div className="h-10 w-10 animate-pulse rounded-xl bg-neutral-200" />
             </div>
@@ -115,7 +118,7 @@ export default function DashboardLoading() {
 
           {/* Table */}
           <SkeletonTable rows={5} columns={5} />
-        </motion.div>
+        </div>
       </main>
     </div>
   );

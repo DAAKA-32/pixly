@@ -1,34 +1,19 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 // ===========================================
 // PIXLY - Skeleton Components
 // Reusable skeleton primitives for loading states
+// Single animation: CSS animate-pulse (opacity 1.5s)
 // ===========================================
 
 // ============ BASE SKELETON ============
 interface SkeletonProps {
   className?: string;
   animate?: boolean;
-  variant?: 'default' | 'shimmer';
   style?: React.CSSProperties;
 }
 
-export function Skeleton({ className, animate = true, variant = 'default', style }: SkeletonProps) {
-  if (variant === 'shimmer') {
-    return (
-      <div className={cn('relative overflow-hidden rounded-md bg-neutral-200/70', className)} style={style}>
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-          animate={{ x: ['-100%', '100%'] }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-        />
-      </div>
-    );
-  }
-
+export function Skeleton({ className, animate = true, style }: SkeletonProps) {
   return (
     <div
       className={cn(

@@ -42,9 +42,11 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
-  signInGoogle: () => Promise<void>;
+  signUp: (email: string, password: string, name: string) => Promise<{ isNewUser: boolean }>;
+  signInGoogle: () => Promise<{ isNewUser: boolean }>;
+  acceptTerms: () => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -124,23 +126,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // signUp: same pattern - cookie + user data set before resolving
-  const signUp = async (email: string, password: string, name: string) => {
+  const signUp = async (email: string, password: string, name: string): Promise<{ isNewUser: boolean }> => {
     const fbUser = await signUpWithEmail(email, password, name);
     setSessionCookie(fbUser.uid);
     setFirebaseUser(fbUser);
     const userData = await getUserData(fbUser.uid);
     setUser(userData);
     authResolvedRef.current = true;
+    return { isNewUser: true };
   };
 
-  // signInGoogle: same pattern
-  const signInGoogle = async () => {
-    const fbUser = await signInWithGoogle();
+  // signInGoogle: returns isNewUser so the caller can show terms modal
+  const signInGoogle = async (): Promise<{ isNewUser: boolean }> => {
+    const { user: fbUser, isNewUser } = await signInWithGoogle();
     setSessionCookie(fbUser.uid);
     setFirebaseUser(fbUser);
     const userData = await getUserData(fbUser.uid);
     setUser(userData);
     authResolvedRef.current = true;
+    return { isNewUser };
+  };
+
+  const acceptTerms = async () => {
+    const res = await fetch('/api/auth/accept-terms', { method: 'POST' });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Erreur lors de l\'acceptation des CGU');
+    }
+    // Refresh user data to get updated termsAcceptedAt + termsVersion
+    if (firebaseUser) {
+      const userData = await getUserData(firebaseUser.uid);
+      setUser(userData);
+    }
+  };
+
+  const refreshUser = async () => {
+    if (firebaseUser) {
+      const userData = await getUserData(firebaseUser.uid);
+      setUser(userData);
+    }
   };
 
   const logout = async () => {
@@ -160,7 +184,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         signIn,
         signUp,
         signInGoogle,
+        acceptTerms,
         logout,
+        refreshUser,
       }}
     >
       {children}

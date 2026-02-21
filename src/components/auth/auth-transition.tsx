@@ -80,7 +80,7 @@ export function AuthTransition({
                   initial={{ scale: 0, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.2, type: 'spring', stiffness: 500, damping: 25 }}
-                  className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-green-500 ring-3 ring-white"
+                  className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 ring-3 ring-white"
                 >
                   <Check className="h-4 w-4 text-white" strokeWidth={3} />
                 </motion.div>

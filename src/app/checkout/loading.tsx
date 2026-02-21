@@ -1,7 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
-import { LogoLoader } from '@/components/ui/loader';
 import { Skeleton, SkeletonButton } from '@/components/ui/skeleton';
 
 // ===========================================
@@ -23,12 +19,7 @@ export default function CheckoutLoading() {
         </div>
       </header>
 
-      <motion.main
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3 }}
-        className="mx-auto max-w-5xl p-6 lg:p-8"
-      >
+      <main className="mx-auto max-w-5xl p-6 lg:p-8">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           {/* Left Column - Form */}
           <div className="lg:col-span-3 space-y-6">
@@ -137,7 +128,7 @@ export default function CheckoutLoading() {
             </div>
           </div>
         </div>
-      </motion.main>
+      </main>
     </div>
   );
 }

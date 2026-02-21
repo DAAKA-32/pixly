@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminDb } from '@/lib/firebase/admin';
+import { encryptToken } from '@/lib/crypto/tokens';
 
 // ===========================================
 // PIXLY - Meta OAuth Callback
@@ -13,13 +14,13 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=meta_auth_failed', request.url)
+      new URL('/integrations?error=meta_auth_failed', request.url)
     );
   }
 
   if (!code) {
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=no_code', request.url)
+      new URL('/integrations?error=no_code', request.url)
     );
   }
 
@@ -39,7 +40,7 @@ export async function GET(request: NextRequest) {
     if (tokenData.error) {
       console.error('Meta token error:', tokenData.error);
       return NextResponse.redirect(
-        new URL('/dashboard/integrations?error=token_exchange_failed', request.url)
+        new URL('/integrations?error=token_exchange_failed', request.url)
       );
     }
 
@@ -77,7 +78,7 @@ export async function GET(request: NextRequest) {
           connectedAt: new Date(),
           accountId: adAccount?.account_id || null,
           accountName: adAccount?.name || 'Meta Ads',
-          accessToken: finalToken,
+          accessToken: encryptToken(finalToken),
           refreshToken: null, // Meta doesn't use refresh tokens
           expiresAt: new Date(Date.now() + finalExpiry * 1000),
         },
@@ -85,12 +86,12 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?success=meta', request.url)
+      new URL('/integrations?success=meta', request.url)
     );
   } catch (error) {
     console.error('Meta OAuth error:', error);
     return NextResponse.redirect(
-      new URL('/dashboard/integrations?error=oauth_failed', request.url)
+      new URL('/integrations?error=oauth_failed', request.url)
     );
   }
 }

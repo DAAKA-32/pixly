@@ -1,6 +1,3 @@
-'use client';
-
-import { motion } from 'framer-motion';
 import { Skeleton, SkeletonButton } from '@/components/ui/skeleton';
 
 // ===========================================
@@ -60,12 +57,7 @@ export default function OnboardingLoading() {
         </div>
 
         {/* Form Skeleton */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="flex-1 flex items-center justify-center p-6 sm:p-10"
-        >
+        <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
           <div className="w-full max-w-[440px]">
             {/* Title */}
             <Skeleton className="h-8 w-80 mb-3" />
@@ -82,7 +74,7 @@ export default function OnboardingLoading() {
               <SkeletonButton size="lg" width="w-full" />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

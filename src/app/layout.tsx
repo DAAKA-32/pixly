@@ -3,6 +3,8 @@ import { Inter, DM_Serif_Display } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
 import { ZoomGuard } from '@/components/ui/zoom-guard';
+import { PageProgress } from '@/components/ui/page-progress';
+import { JsonLd } from '@/components/seo/json-ld';
 
 // ===========================================
 // PIXLY - Root Layout
@@ -25,51 +27,71 @@ const dmSerif = DM_Serif_Display({
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
   themeColor: '#ffffff',
 };
 
 export const metadata: Metadata = {
-  title: 'Pixly',
+  metadataBase: new URL('https://pixly.app'),
+  title: {
+    default: 'Pixly — Attribution Marketing Multi-Touch | Mesurez votre vrai ROAS',
+    template: '%s | Pixly',
+  },
   description:
-    'Track, attribute, and optimize your marketing spend with precision. Get accurate ROAS data across all your ad channels.',
+    'Pixly connecte vos plateformes publicitaires à vos ventes réelles. Attribution multi-touch, tracking server-side et analytics avancés pour optimiser votre ROAS, même avec iOS 14+.',
   keywords: [
-    'marketing attribution',
-    'ad tracking',
+    'attribution marketing',
+    'tracking publicitaire',
     'ROAS',
-    'conversion tracking',
+    'suivi des conversions',
     'marketing analytics',
+    'attribution multi-touch',
+    'tracking server-side',
+    'pixel server-side',
+    'Meta Ads tracking',
+    'Google Ads attribution',
+    'TikTok Ads tracking',
+    'tableau de bord marketing',
+    'analyse performance marketing',
+    'SaaS marketing',
+    'iOS 14 tracking',
   ],
-  authors: [{ name: 'Pixly' }],
+  authors: [{ name: 'Pixly', url: 'https://pixly.app' }],
+  creator: 'Pixly',
+  publisher: 'Pixly',
   icons: {
-    icon: [{ url: '/logo.jpg', type: 'image/jpeg' }],
-    apple: [{ url: '/logo.jpg', type: 'image/jpeg' }],
+    icon: [{ url: '/logo-pixly.png', type: 'image/png' }],
+    apple: [{ url: '/logo-pixly.png', type: 'image/png' }],
   },
   manifest: '/manifest.json',
+  alternates: {
+    canonical: 'https://pixly.app',
+  },
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
     url: 'https://pixly.app',
     siteName: 'Pixly',
-    title: 'Pixly',
+    title: 'Pixly — Attribution Marketing Multi-Touch | Mesurez votre vrai ROAS',
     description:
-      'Track, attribute, and optimize your marketing spend with precision.',
+      'Connectez vos plateformes publicitaires à vos ventes réelles. Attribution multi-touch, tracking server-side et analytics avancés pour un ROAS précis.',
     images: [
       {
-        url: '/logo.jpg',
-        width: 1080,
-        height: 1080,
-        alt: 'Pixly',
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Pixly — Plateforme d\'attribution marketing multi-touch',
+        type: 'image/png',
       },
     ],
   },
   twitter: {
-    card: 'summary',
-    title: 'Pixly',
+    card: 'summary_large_image',
+    title: 'Pixly — Attribution Marketing Multi-Touch',
     description:
-      'Track, attribute, and optimize your marketing spend with precision.',
-    images: ['/logo.jpg'],
+      'Connectez vos plateformes publicitaires à vos ventes réelles. Tracking server-side et analytics avancés pour un ROAS précis.',
+    images: ['/og-image.png'],
+    creator: '@pixlyapp',
   },
   appleWebApp: {
     capable: true,
@@ -79,7 +101,15 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
+  category: 'technology',
 };
 
 export default function RootLayout({
@@ -89,8 +119,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
+      <head>
+        <JsonLd />
+      </head>
       <body className="min-h-screen bg-neutral-50 antialiased" suppressHydrationWarning>
         <ZoomGuard />
+        <PageProgress />
         <Providers>{children}</Providers>
       </body>
     </html>
