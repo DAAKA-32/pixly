@@ -2,7 +2,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
   ArrowRight,
-  Star,
   ChevronDown,
 } from 'lucide-react';
 
@@ -72,34 +71,6 @@ const CONTENT = {
         description: 'iOS 14+, ad-blockers et restrictions navigateur font perdre jusqu\'à 40% de vos conversions aux pixels traditionnels. Le pixel first-party de Pixly et le tracking server-side capturent ce que les autres manquent.',
         steps: ['Installez le pixel Pixly sur votre site', 'Le tracking server-side s\'active automatiquement', 'Vos plateformes reçoivent des données complètes'],
         impact: 'Récupérez jusqu\'à 40% de conversions manquantes et optimisez sur des données fiables.',
-      },
-    ],
-  },
-
-  testimonials: {
-    label: 'Témoignages',
-    title: 'Ils ont repris le contrôle de leur budget',
-    items: [
-      {
-        quote: '40% de nos conversions venaient d\'un canal sous-investi. Depuis Pixly, notre ROAS a augmenté de 47% en deux mois.',
-        author: 'Marie Dupont',
-        role: 'Directrice Marketing',
-        company: 'Maison Élégance',
-        image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face',
-      },
-      {
-        quote: 'Enfin des données fiables post-iOS 14. Je justifie chaque euro dépensé auprès de ma direction.',
-        author: 'Thomas Martin',
-        role: 'Growth Manager',
-        company: 'CloudFlow',
-        image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      },
-      {
-        quote: '5 minutes pour tout installer. Pixly est devenu indispensable pour piloter nos campagnes.',
-        author: 'Sophie Bernard',
-        role: 'CEO & Fondatrice',
-        company: 'NaturaCare',
-        image: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face',
       },
     ],
   },
@@ -273,60 +244,6 @@ function LogoCloud() {
 // ===========================================
 // SECTION COMPONENTS
 // ===========================================
-
-function Testimonials() {
-  return (
-    <section id="témoignages" className="section bg-neutral-50" aria-label="Témoignages clients">
-      <div className="container-main">
-        <AnimatedSection>
-          <div className="text-center mb-12 sm:mb-16">
-            <span className="label">{CONTENT.testimonials.label}</span>
-            <h2 className="heading-lg mt-3 sm:mt-4">{CONTENT.testimonials.title}</h2>
-          </div>
-        </AnimatedSection>
-
-        <StaggerChildren className="grid md:grid-cols-3 gap-6" staggerDelay={0.12}>
-          {CONTENT.testimonials.items.map((item) => (
-            <StaggerItem key={item.author}>
-              <article className="bg-white border border-neutral-200/80 rounded-2xl p-6 sm:p-8 hover:border-neutral-300 hover:shadow-lg transition-all duration-300 h-full flex flex-col">
-                {/* Stars */}
-                <div className="flex gap-0.5 mb-5" aria-label="5 étoiles sur 5">
-                  {[...Array(5)].map((_, j) => (
-                    <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-
-                {/* Quote */}
-                <blockquote className="text-neutral-600 mb-6 leading-relaxed flex-1">
-                  &ldquo;{item.quote}&rdquo;
-                </blockquote>
-
-                {/* Author */}
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden ring-2 ring-neutral-100">
-                    <Image
-                      src={item.image}
-                      alt={`Photo de ${item.author}, ${item.role} chez ${item.company}`}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-neutral-900 font-medium text-sm">{item.author}</p>
-                    <p className="text-neutral-400 text-xs">
-                      {item.role}, {item.company}
-                    </p>
-                  </div>
-                </div>
-              </article>
-            </StaggerItem>
-          ))}
-        </StaggerChildren>
-      </div>
-    </section>
-  );
-}
 
 function FounderSection() {
   return (
@@ -622,7 +539,6 @@ export default function LandingPage() {
           title={CONTENT.features.title}
           features={CONTENT.features.items}
         />
-        <Testimonials />
         <FounderSection />
         <Pricing />
         <SimulatorROI />

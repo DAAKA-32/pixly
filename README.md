@@ -17,7 +17,7 @@ Live demo: https://pixly-sepia.vercel.app
 
 ## About the demo data
 
-The dashboard can run on a generated, seeded data set (`src/lib/demo/data.ts`) so it can be explored without connecting any ad account. **The figures shown in demo mode are fake.** The testimonials on the landing page are placeholders, not real customers.
+The dashboard can run on a generated, seeded data set (`src/lib/demo/data.ts`) so it can be explored without connecting any ad account. **The figures shown in demo mode are fake.**
 
 ## Stack
 

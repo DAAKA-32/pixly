@@ -356,7 +356,7 @@ export function ROICalculator() {
 
         {/* Disclaimer */}
         <p className="text-center text-xs text-neutral-400 mt-5">
-          * Projections basées sur les résultats moyens observés chez nos clients. Résultats individuels variables.
+          * Estimation indicative basée sur les valeurs saisies ci-dessus. Les résultats réels varient.
         </p>
       </div>
     </>

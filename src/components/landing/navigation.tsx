@@ -14,7 +14,6 @@ import { FeatureMockup } from '@/components/landing/feature-mockups';
 const NAV_LINKS = [
   { label: 'Démo', href: '/#demo' },
   { label: 'Fonctionnalités', href: '/#fonctionnalités' },
-  { label: 'Témoignages', href: '/#témoignages' },
   { label: 'Tarifs', href: '/#tarifs' },
   { label: 'Simulateur ROI', href: '/#simulateur', accent: true },
 ];
@@ -85,7 +84,7 @@ export function Navigation() {
   useEffect(() => {
     if (window.location.pathname !== '/') return;
 
-    const sectionIds = ['demo', 'fonctionnalités', 'témoignages', 'tarifs', 'simulateur'];
+    const sectionIds = ['demo', 'fonctionnalités', 'tarifs', 'simulateur'];
     const elements = sectionIds
       .map(id => document.getElementById(id))
       .filter((el): el is HTMLElement => el !== null);
