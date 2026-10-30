@@ -52,3 +52,6 @@ firebase-service-account.json
 *.swo
 
 .vercel
+
+# Local Claude Code settings
+.claude/settings.local.json
